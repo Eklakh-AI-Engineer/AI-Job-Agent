@@ -43,3 +43,19 @@ logs/
 # Misc
 *.zip
 *.tar.gz
+
+# SQLite databases (Phase 2 runtime artifacts)
+*.db
+*.sqlite
+*.sqlite3
+
+# Celery beat schedule (runtime artifact)
+celerybeat-schedule
+celerybeat.pid
+
+# Scratch / seed scripts (not part of the pipeline)
+backend/seed_jobs.py
+backend/job_count.py
+backend/test_db.py
+backend/tree_output.txt
+tree_output.txt

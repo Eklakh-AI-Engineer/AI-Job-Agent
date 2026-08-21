@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: https://github.com/OWNER/AI-Job-Agent/security/policy
+    about: Please report security vulnerabilities privately per SECURITY.md — do not open a public issue.
+  - name: Questions & Support
+    url: https://github.com/OWNER/AI-Job-Agent/discussions
+    about: Ask usage questions or start a discussion.

@@ -1,0 +1,18 @@
+from typing import Optional, List
+from sqlalchemy import String, Text, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.models.base import Base
+
+class User(Base):
+    __tablename__ = "users"
+
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column(String(255))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    full_name: Mapped[Optional[str]] = mapped_column(String(255))
+    
+    # Store JSON representation of their resume/profile data for the matching agent
+    profile_data: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Relationships
+    job_applications: Mapped[List["ApplicationStatus"]] = relationship("ApplicationStatus", back_populates="user")

@@ -1,0 +1,19 @@
+# Default owners for everything in the repo
+*                       @OWNER
+
+# Backend & agents
+/backend/               @OWNER
+/backend/app/agents/    @OWNER
+
+# Infrastructure
+/deployment/            @OWNER
+/.github/workflows/     @OWNER
+/monitoring/            @OWNER
+
+# Documentation
+/docs/                  @OWNER
+*.md                    @OWNER
+
+# Security-sensitive
+SECURITY.md             @OWNER
+.env.example             @OWNER

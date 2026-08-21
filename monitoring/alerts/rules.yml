@@ -1,0 +1,26 @@
+groups:
+  - name: ai-job-agent-alerts
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate on AI Job Agent API"
+
+      - alert: APIDown
+        expr: up{job="ai-job-agent-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AI Job Agent API is down"
+
+      - alert: CeleryQueueBacklog
+        expr: celery_queue_length > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Celery task queue backlog is growing"

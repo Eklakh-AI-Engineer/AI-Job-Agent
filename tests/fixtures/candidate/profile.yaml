@@ -1,0 +1,18 @@
+candidate_id: "CAND-001"
+full_name: "Synthetic Candidate"
+email: "synthetic@example.com"
+target_roles:
+  - "AI Engineer"
+  - "ML Engineer"
+  - "Software Engineer"
+education:
+  degree: "Bachelor of Technology"
+  field_of_study: "Computer Science"
+  institution: "State University"
+  graduation_year: 2024
+  status: "completed"
+work_authorization:
+  authorized_locations:
+    - "US"
+    - "IN"
+  requires_visa_sponsorship: false

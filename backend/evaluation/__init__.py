@@ -12,5 +12,39 @@ Phase 3E: full evaluator pipeline + explainable output.
 """
 
 from backend.evaluation.requirements import extract_requirements
+from backend.evaluation.candidate_models import (
+    CandidateKB,
+    CandidateProfile,
+    CandidateSkills,
+    SkillRecord,
+    CandidateClaims,
+    ClaimRecord,
+    CandidateExperience,
+    WorkExperienceRecord,
+    ProjectRecord,
+    CandidatePreferences,
+    APPROVED_TARGET_ROLES,
+)
+from backend.evaluation.candidate_loader import (
+    load_candidate_kb_from_dir,
+    load_candidate_kb_from_dict,
+    validate_candidate_kb,
+)
 
-__all__ = ["extract_requirements"]
+__all__ = [
+    "extract_requirements",
+    "CandidateKB",
+    "CandidateProfile",
+    "CandidateSkills",
+    "SkillRecord",
+    "CandidateClaims",
+    "ClaimRecord",
+    "CandidateExperience",
+    "WorkExperienceRecord",
+    "ProjectRecord",
+    "CandidatePreferences",
+    "APPROVED_TARGET_ROLES",
+    "load_candidate_kb_from_dir",
+    "load_candidate_kb_from_dict",
+    "validate_candidate_kb",
+]

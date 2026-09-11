@@ -1,0 +1,30 @@
+work_experience:
+  - id: "EXP-001"
+    role: "ML Engineering Intern"
+    company: "Acme AI Corp"
+    location: "San Francisco, CA"
+    work_mode: "hybrid"
+    start_date: "2023-06"
+    end_date: "2023-12"
+    duration_months: 6
+    verified: true
+    disclosure: "public"
+    claims:
+      - "CLAIM-001"
+      - "CLAIM-002"
+
+projects:
+  - id: "PROJ-001"
+    title: "Autonomous Agent Evaluator"
+    domain:
+      - "NLP"
+      - "Generative AI"
+    skills_used:
+      - "Python"
+      - "PyTorch"
+    description: "Built deterministic evaluation and verification pipeline for LLM outputs."
+    verified: true
+    verification_source: "https://github.com/example/eval-engine"
+    disclosure: "public"
+    claims:
+      - "CLAIM-001"

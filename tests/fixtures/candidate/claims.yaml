@@ -1,0 +1,46 @@
+claims:
+  - id: "CLAIM-001"
+    title: "Production ML Pipeline"
+    statement: "Designed and implemented end-to-end model training and inference pipeline in Python and PyTorch."
+    verified: true
+    verification_source: "GitHub repository / thesis demo"
+    disclosure: "public"
+    associated_skills:
+      - "SKILL-1"
+      - "SKILL-2"
+
+  - id: "CLAIM-002"
+    title: "Proprietary Distributed Training Infrastructure"
+    statement: "Confidential distributed training cluster optimization benchmarking under NDA."
+    verified: true
+    verification_source: "Employment verification record"
+    disclosure: "restricted"
+    associated_skills:
+      - "SKILL-4"
+
+  - id: "CLAIM-003"
+    title: "Academic Data Analysis"
+    statement: "Analyzed tabular datasets using pandas and SQL for university capstone."
+    verified: true
+    verification_source: "Academic transcript and project report"
+    disclosure: "public"
+    associated_skills:
+      - "SKILL-1"
+
+  - id: "CLAIM-004"
+    title: "Self-Study Cloud Fundamentals"
+    statement: "Explored AWS Lambda and S3 in personal sandbox experiments."
+    verified: false
+    verification_source: null
+    disclosure: "undetermined"
+    associated_skills:
+      - "SKILL-3"
+
+  - id: "CLAIM-005"
+    title: "Open-Source Python Tooling"
+    statement: "Contributed fixes and tests to an open-source Python CLI library."
+    verified: true
+    verification_source: "GitHub pull requests"
+    disclosure: "public"
+    associated_skills:
+      - "SKILL-1"

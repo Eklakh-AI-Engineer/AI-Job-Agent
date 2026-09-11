@@ -1,0 +1,13 @@
+preferred_work_modes:
+  - "remote"
+  - "hybrid"
+preferred_locations:
+  - "San Francisco, CA"
+  - "Remote"
+  - "New York, NY"
+willing_to_relocate: true
+compensation:
+  minimum_annual: 120000.0
+  currency: "USD"
+excluded_companies: []
+excluded_domains: []

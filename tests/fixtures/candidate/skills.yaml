@@ -1,0 +1,39 @@
+skills:
+  - id: "SKILL-1"
+    name: "Python"
+    category: "Languages"
+    verified: true
+    evidence_claims:
+      - "CLAIM-001"
+      - "CLAIM-005"
+    disclosure: "public"
+    transferable_to:
+      - "Scripting"
+      - "Backend"
+
+  - id: "SKILL-2"
+    name: "PyTorch"
+    category: "Frameworks"
+    verified: true
+    evidence_claims:
+      - "CLAIM-001"
+    disclosure: "public"
+    transferable_to:
+      - "Deep Learning"
+
+  - id: "SKILL-3"
+    name: "AWS"
+    category: "Cloud"
+    verified: false
+    evidence_claims: []
+    disclosure: "public"
+    transferable_to: []
+
+  - id: "SKILL-4"
+    name: "Distributed Systems"
+    category: "Architecture"
+    verified: true
+    evidence_claims:
+      - "CLAIM-002"
+    disclosure: "restricted"
+    transferable_to: []

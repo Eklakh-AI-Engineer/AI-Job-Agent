@@ -102,3 +102,4 @@ AI Job Agent assists users throughout the job search process. Users remain respo
 ## ⭐ Project Status
 
 **Current Stage:** Phase 1 — Foundation (repository scaffolding, governance, and tooling)
+"# AI-Job-Agent" 

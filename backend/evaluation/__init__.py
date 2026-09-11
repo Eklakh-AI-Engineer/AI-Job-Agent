@@ -10,3 +10,7 @@ Phase 3C: eligibility, skill matching, role matching.
 Phase 3D: scoring and priority classification.
 Phase 3E: full evaluator pipeline + explainable output.
 """
+
+from backend.evaluation.requirements import extract_requirements
+
+__all__ = ["extract_requirements"]

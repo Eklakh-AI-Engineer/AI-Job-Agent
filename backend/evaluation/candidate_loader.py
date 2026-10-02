@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Union, Dict, Any, Set
 import yaml
 
-from backend.evaluation.candidate_models import (
+from .candidate_models import (
     CandidateKB,
     CandidateProfile,
     CandidateSkills,

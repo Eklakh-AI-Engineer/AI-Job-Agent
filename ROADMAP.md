@@ -30,7 +30,9 @@ This roadmap tracks AI Job Agent from repository foundation through a production
 - [x] Authentication: bcrypt password hashing, JWT bearer tokens, register/login/me
 - [x] Service layer (`app/services`) and request/response schemas (`app/schemas`)
 - [x] Dockerized local dev environment, CI running lint plus unit and integration tests
-- [ ] Integration tests against real PostgreSQL (currently SQLite-backed for determinism)
+- [x] Integration tests against real PostgreSQL + pgvector (`tests/integration_pg/`)
+- [x] In-container alembic upgrade on boot (entrypoint script)
+- [x] `backend.*` import-path compatibility (relative imports + PYTHONPATH=/app)
 
 ## Phase 4 — Discovery & Matching
 - Job Discovery Agent (career pages, RSS, public APIs — no ToS-violating scraping)

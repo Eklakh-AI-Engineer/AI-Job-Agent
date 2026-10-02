@@ -1,5 +1,5 @@
 from typing import List, Set
-from backend.jobs.models import Job
+from .models import Job
 
 
 class Deduplicator:

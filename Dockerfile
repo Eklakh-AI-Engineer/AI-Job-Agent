@@ -14,18 +14,29 @@ FROM base AS deps
 COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
 
-# ---- Playwright browsers (for the automation worker image) ----
-FROM deps AS automation
-RUN pip install playwright && playwright install --with-deps chromium
-COPY backend/ /app/backend/
-WORKDIR /app/backend
-CMD ["celery", "-A", "app.core.celery_app", "worker", "--loglevel=INFO"]
-
 # ---- API runtime ----
 FROM deps AS api
+# ``backend/`` is the parent of ``app/`` at runtime, so packages that cross
+# reference each other (``backend.evaluation`` ↔ ``backend.jobs``) resolve
+# without relative-import gymnastics. ``/app/backend`` is also on PYTHONPATH
+# so ``app.*`` imports work without changing the WORKDIR.
+ENV PYTHONPATH=/app:/app/backend
 COPY backend/ /app/backend/
+# Copy and enable the entrypoint script that applies migrations on boot.
+RUN chmod +x /app/backend/entrypoint.sh
 WORKDIR /app/backend
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
   CMD curl -f http://localhost:8000/health || exit 1
+ENTRYPOINT ["/app/backend/entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# ---- Playwright browsers (for the automation worker image) ----
+FROM deps AS automation
+RUN pip install playwright && playwright install --with-deps chromium
+ENV PYTHONPATH=/app:/app/backend
+COPY backend/ /app/backend/
+RUN chmod +x /app/backend/entrypoint.sh
+WORKDIR /app/backend
+ENTRYPOINT ["/app/backend/entrypoint.sh"]
+CMD ["celery", "-A", "app.core.celery_app", "worker", "--loglevel=INFO"]

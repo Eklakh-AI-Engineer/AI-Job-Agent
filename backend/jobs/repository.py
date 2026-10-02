@@ -13,7 +13,7 @@ from sqlalchemy import (
     update,
     func,
 )
-from backend.jobs.models import Job
+from .models import Job
 
 
 class JobRepository:

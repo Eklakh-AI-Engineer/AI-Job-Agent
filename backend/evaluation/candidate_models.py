@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Set
 from pydantic import BaseModel, Field, model_validator
-from backend.evaluation.models import DisclosureLevel, EvidenceReference
+from .models import DisclosureLevel, EvidenceReference
 
 APPROVED_TARGET_ROLES: Set[str] = {
     "AI Engineer",

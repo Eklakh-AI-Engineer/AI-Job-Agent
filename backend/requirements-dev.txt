@@ -1,7 +1,12 @@
 -r requirements.txt
+
+# ---- Testing ----
 pytest==8.3.3
 pytest-asyncio==0.24.0
 pytest-cov==5.0.0
+aiosqlite==0.20.0        # lets the API test suite run without PostgreSQL
+
+# ---- Lint / format ----
 black==24.8.0
 ruff==0.6.9
 pre-commit==3.8.0

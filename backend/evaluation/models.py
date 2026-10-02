@@ -33,8 +33,10 @@ from pydantic import BaseModel, Field, model_validator
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class SkillMatchStatus(str, Enum):
     """Classification of how well a candidate's evidence matches a job skill."""
+
     VERIFIED_MATCH = "VERIFIED_MATCH"
     """Candidate has a verified, relevant claim or skill backing this requirement."""
     PARTIAL_MATCH = "PARTIAL_MATCH"
@@ -49,6 +51,7 @@ class SkillMatchStatus(str, Enum):
 
 class EligibilityStatus(str, Enum):
     """Overall eligibility verdict for a job."""
+
     ELIGIBLE = "ELIGIBLE"
     NOT_ELIGIBLE = "NOT_ELIGIBLE"
     UNCERTAIN = "UNCERTAIN"
@@ -56,6 +59,7 @@ class EligibilityStatus(str, Enum):
 
 class RoleMatchStatus(str, Enum):
     """Whether the job role aligns with the candidate's confirmed target roles."""
+
     EXACT_MATCH = "EXACT_MATCH"
     """Job role matches one of the candidate's target roles exactly."""
     RELATED_MATCH = "RELATED_MATCH"
@@ -68,6 +72,7 @@ class RoleMatchStatus(str, Enum):
 
 class RecommendationStatus(str, Enum):
     """Final recommendation produced by the evaluation engine."""
+
     APPLY = "APPLY"
     REVIEW = "REVIEW"
     REJECT = "REJECT"
@@ -75,11 +80,12 @@ class RecommendationStatus(str, Enum):
 
 class PriorityLevel(str, Enum):
     """Priority tier, derived from the overall fit score."""
-    HIGH_PRIORITY = "HIGH_PRIORITY"   # 90–100
-    STRONG = "STRONG"                 # 80–89
-    REASONABLE = "REASONABLE"         # 70–79
-    REVIEW = "REVIEW"                 # 60–69
-    REJECT = "REJECT"                 # < 60
+
+    HIGH_PRIORITY = "HIGH_PRIORITY"  # 90–100
+    STRONG = "STRONG"  # 80–89
+    REASONABLE = "REASONABLE"  # 70–79
+    REVIEW = "REVIEW"  # 60–69
+    REJECT = "REJECT"  # < 60
 
 
 class DisclosureLevel(str, Enum):
@@ -89,6 +95,7 @@ class DisclosureLevel(str, Enum):
     IMPORTANT: 'restricted' claims must NEVER appear in public-facing text.
     'undetermined' must be treated as restricted until explicitly reviewed.
     """
+
     PUBLIC = "public"
     RESTRICTED = "restricted"
     UNDETERMINED = "undetermined"
@@ -98,6 +105,7 @@ class DisclosureLevel(str, Enum):
 # Evidence Reference
 # ---------------------------------------------------------------------------
 
+
 class EvidenceReference(BaseModel):
     """
     A reference to a specific piece of candidate evidence by ID.
@@ -106,6 +114,7 @@ class EvidenceReference(BaseModel):
     This ensures restricted claims (e.g., CLAIM-002) are never embedded
     in evaluation output that could be exposed publicly.
     """
+
     ref_id: str = Field(
         ...,
         description=(
@@ -141,6 +150,7 @@ class EvidenceReference(BaseModel):
 # Job Requirements
 # ---------------------------------------------------------------------------
 
+
 class JobRequirements(BaseModel):
     """
     Structured representation of requirements extracted from a canonical Job.
@@ -151,6 +161,7 @@ class JobRequirements(BaseModel):
     Fields that cannot be reliably extracted from the job description should
     be left as None or empty lists — never guessed or inferred.
     """
+
     job_id: str = Field(
         ...,
         description="ID of the source Job record this was extracted from.",
@@ -223,12 +234,14 @@ class JobRequirements(BaseModel):
 # Skill Match
 # ---------------------------------------------------------------------------
 
+
 class SkillMatch(BaseModel):
     """
     Evaluation of one job skill against the candidate knowledge base.
 
     Phase 3C will populate these; Phase 3A defines the container.
     """
+
     skill: str = Field(
         ...,
         description="The skill being evaluated (as taken from JobRequirements).",
@@ -257,6 +270,7 @@ class SkillMatch(BaseModel):
 # Eligibility Result
 # ---------------------------------------------------------------------------
 
+
 class EligibilityResult(BaseModel):
     """
     Verdict on whether the candidate meets the job's eligibility requirements.
@@ -264,6 +278,7 @@ class EligibilityResult(BaseModel):
     Uncertainty is explicit: UNCERTAIN is returned when a requirement
     cannot be evaluated, not when it is assumed to pass.
     """
+
     status: EligibilityStatus = Field(
         ...,
         description="Overall eligibility verdict.",
@@ -295,7 +310,10 @@ class EligibilityResult(BaseModel):
         If the overall status is NOT_ELIGIBLE, at least one failed requirement
         must be listed. This prevents silent rejections with no stated reason.
         """
-        if self.status == EligibilityStatus.NOT_ELIGIBLE and not self.failed_requirements:
+        if (
+            self.status == EligibilityStatus.NOT_ELIGIBLE
+            and not self.failed_requirements
+        ):
             raise ValueError(
                 "EligibilityResult with status NOT_ELIGIBLE must list at least one "
                 "failed_requirement."
@@ -306,6 +324,7 @@ class EligibilityResult(BaseModel):
 # ---------------------------------------------------------------------------
 # Role Match
 # ---------------------------------------------------------------------------
+
 
 class RoleMatch(BaseModel):
     """
@@ -320,6 +339,7 @@ class RoleMatch(BaseModel):
 
     Do not expand this list. Do not infer role alignment.
     """
+
     requested_role: Optional[str] = Field(
         None,
         description="Role title as stated in the job posting.",
@@ -348,6 +368,7 @@ class RoleMatch(BaseModel):
 # ---------------------------------------------------------------------------
 # Evaluation Result
 # ---------------------------------------------------------------------------
+
 
 class EvaluationResult(BaseModel):
     """

@@ -1,6 +1,7 @@
 from typing import List, Set
 from backend.jobs.models import Job
 
+
 class Deduplicator:
     def __init__(self):
         self.seen_fingerprints: Set[str] = set()
@@ -26,7 +27,14 @@ class Deduplicator:
                 return True
 
         if job.title and job.company and job.location:
-            fallback = str(hash(job.source + job.title.lower() + job.company.lower() + job.location.lower()))
+            fallback = str(
+                hash(
+                    job.source
+                    + job.title.lower()
+                    + job.company.lower()
+                    + job.location.lower()
+                )
+            )
             if fallback in self.seen_fingerprints:
                 return True
 
@@ -34,15 +42,22 @@ class Deduplicator:
 
     def mark_seen(self, job: Job):
         self.seen_fingerprints.add(f"{job.source}:{job.source_job_id}")
-        
+
         if job.application_url:
             self.seen_fingerprints.add(self._normalize_url(job.application_url))
-            
+
         if job.job_url:
             self.seen_fingerprints.add(self._normalize_url(job.job_url))
-            
+
         if job.title and job.company and job.location:
-            fallback = str(hash(job.source + job.title.lower() + job.company.lower() + job.location.lower()))
+            fallback = str(
+                hash(
+                    job.source
+                    + job.title.lower()
+                    + job.company.lower()
+                    + job.location.lower()
+                )
+            )
             self.seen_fingerprints.add(fallback)
 
     def filter(self, jobs: List[Job]) -> List[Job]:

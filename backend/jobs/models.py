@@ -1,7 +1,8 @@
-from pydantic import BaseModel, HttpUrl, field_validator
+from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 import uuid
+
 
 class Job(BaseModel):
     id: str = None  # UUID, assigned on creation

@@ -23,9 +23,14 @@ This roadmap tracks AI Job Agent from repository foundation through a production
 - System, agent, database, API, and cloud architecture specs
 - Technology evaluation / ADRs
 
-## Phase 3 — Backend Foundation
-- FastAPI service skeleton, PostgreSQL schema + migrations, Redis, authentication
-- Dockerized local dev environment, CI running real tests against services
+## Phase 3 — Backend Foundation (Current)
+- [x] FastAPI service skeleton: versioned `/api/v1` routers, root and `/health` probes
+- [x] PostgreSQL schema + Alembic migration (`users`, `job_postings`, `application_statuses`)
+- [x] Redis + Celery wiring (broker, result backend, worker/beat containers)
+- [x] Authentication: bcrypt password hashing, JWT bearer tokens, register/login/me
+- [x] Service layer (`app/services`) and request/response schemas (`app/schemas`)
+- [x] Dockerized local dev environment, CI running lint plus unit and integration tests
+- [ ] Integration tests against real PostgreSQL (currently SQLite-backed for determinism)
 
 ## Phase 4 — Discovery & Matching
 - Job Discovery Agent (career pages, RSS, public APIs — no ToS-violating scraping)

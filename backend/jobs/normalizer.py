@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime, timezone
-from backend.jobs.models import Job
+from .models import Job
 
 
 def normalize(raw: dict, source_name: str) -> Job:

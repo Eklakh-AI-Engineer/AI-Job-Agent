@@ -101,11 +101,25 @@ AI Job Agent assists users throughout the job search process. Users remain respo
 
 ## ⭐ Project Status
 
-**Current Stage:** Phase 3 — Backend Foundation
+**Current Stage:** Phase 3 — Backend Foundation (Complete) → Phase 4 next
 
-The API is runnable: versioned routers under `/api/v1`, bcrypt + JWT
-authentication, a service layer, and a test suite that runs without external
-services. Interactive docs are served at `/docs` once the stack is up.
+The API is runnable end-to-end inside `docker compose`: versioned routers
+under `/api/v1`, bcrypt + JWT authentication, a service layer, real Postgres
++ pgvector + Redis, Alembic migrations applied on container boot, and a
+two-tier test suite (fast SQLite-backed default + real-Postgres `-m postgres`).
+
+Interactive docs are served at `/docs` once the stack is up.
+
+```bash
+# Run the full stack (Postgres + pgvector + Redis + API) locally
+cp .env.example .env  # then edit secrets
+docker compose up -d --build
+
+# Run the test suites
+pytest                                  # 188 fast tests, no DB needed
+DATABASE_URL=postgresql+asyncpg://... \
+  pytest tests/integration_pg -m postgres   # 13 real-Postgres tests
+```
 
 ```bash
 # API surface now available
@@ -114,6 +128,8 @@ POST /api/v1/auth/login      # exchange credentials for a bearer token
 GET  /api/v1/users/me        # read/update the caller's profile
 GET  /api/v1/jobs            # list job postings
 POST /api/v1/jobs            # ingest a discovered posting
+GET  /api/v1/jobs/{id}       # read a posting by id
+GET  /health                 # liveness + DB reachability
 ```
 
 See [docs/10_API/Authentication.md](docs/10_API/Authentication.md) and

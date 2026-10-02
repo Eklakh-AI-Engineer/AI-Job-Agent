@@ -6,6 +6,20 @@ All notable changes to this project are documented here. Format based on [Keep a
 ### Added
 - Phase 1 repository foundation: governance files, tooling, CI/CD, Docker, docs skeleton, test scaffolding, monitoring config.
 
+## [0.5.0] - Backend Foundation Complete
+### Added
+- Real-Postgres integration test suite (`tests/integration_pg/`) covering the pgvector extension, every model table, the VECTOR(1536) embedding column, the users email uniqueness index, the auth flow, the jobs CRUD flow, and Alembic migrations.
+- `backend/entrypoint.sh` — applies `alembic upgrade head` before launching the API, so a fresh container is always schema-current.
+- `tests/integration_pg/test_migrations.py` — verifies the Alembic history is reversible and reproducible.
+
+### Changed
+- `Dockerfile` sets `PYTHONPATH=/app:/app/backend` and uses the new entrypoint, so `backend.evaluation` ↔ `backend.jobs` cross-package imports resolve at runtime.
+- `tests/integration_pg/` is excluded from the default `pytest` run (no DATABASE_URL → skip); CI runs it explicitly against the Postgres service.
+- `.github/workflows/ci.yml` `test` job now runs two `pytest` invocations: SQLite-backed suite + `-m postgres` real-Postgres suite.
+
+### Fixed
+- `backend.*` import-path bug: `backend/evaluation/*` and `backend/jobs/*` used `backend.X` absolute imports that worked in pytest (sys.path includes the repo root) but not in the Docker container. Replaced with relative imports inside each package; the single cross-package import (`backend.evaluation.Requirements → backend.jobs.models.Job`) is now resolved by `PYTHONPATH=/app`.
+
 ## [0.4.0] - Backend Foundation
 ### Added
 - FastAPI service skeleton with a versioned API: `/api/v1/auth`, `/api/v1/users`, `/api/v1/jobs`.

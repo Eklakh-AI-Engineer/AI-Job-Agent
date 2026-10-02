@@ -1,4 +1,4 @@
-from backend.jobs.sources.base import JobSource
+from .base import JobSource
 from typing import List
 
 

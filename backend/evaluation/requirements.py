@@ -11,7 +11,7 @@ Rules:
 
 from typing import List, Optional
 from backend.jobs.models import Job
-from backend.evaluation.models import JobRequirements
+from .models import JobRequirements
 
 
 def _clean_str(val: Optional[str]) -> Optional[str]:

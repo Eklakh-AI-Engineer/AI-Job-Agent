@@ -1,6 +1,7 @@
 from backend.jobs.sources.base import JobSource
 from typing import List
 
+
 class FixtureSource(JobSource):
     @property
     def source_name(self) -> str:
@@ -15,7 +16,7 @@ class FixtureSource(JobSource):
                 "location": " San Francisco, CA ",
                 "mode": "hybrid",
                 "url": "https://techcorp.com/jobs/1",
-                "apply": "https://techcorp.com/apply/1"
+                "apply": "https://techcorp.com/apply/1",
             },
             {
                 "source_id": "job_2",
@@ -39,13 +40,13 @@ class FixtureSource(JobSource):
                 "location": " San Francisco, CA ",
                 "mode": "hybrid",
                 "url": "https://techcorp.com/jobs/1",
-                "apply": "https://techcorp.com/apply/1"
+                "apply": "https://techcorp.com/apply/1",
             },
             {
                 "source_id": "job_5",
-                "title": "Software Engineer", # same title as job_1, different company
+                "title": "Software Engineer",  # same title as job_1, different company
                 "company": "Another Tech",
                 "location": "Remote",
-                "url": "https://anothertech.com/jobs/5"
-            }
+                "url": "https://anothertech.com/jobs/5",
+            },
         ]

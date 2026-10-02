@@ -1,8 +1,20 @@
 import json
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import create_engine, MetaData, Table, Column, String, Text, select, insert, update, func
+from sqlalchemy import (
+    create_engine,
+    MetaData,
+    Table,
+    Column,
+    String,
+    Text,
+    select,
+    insert,
+    update,
+    func,
+)
 from backend.jobs.models import Job
+
 
 class JobRepository:
     def __init__(self, db_url: str = "sqlite:///jobs.db"):
@@ -32,7 +44,7 @@ class JobRepository:
             Column("internship_information", String),
             Column("discovered_at", String, nullable=False),
             Column("updated_at", String),
-            Column("raw_source_reference", Text)
+            Column("raw_source_reference", Text),
         )
         self._create_tables()
 
@@ -58,7 +70,7 @@ class JobRepository:
                 data[k] = json.loads(data[k])
         if data.get("raw_source_reference"):
             data["raw_source_reference"] = json.loads(data["raw_source_reference"])
-            
+
         return Job(**data)
 
     def upsert(self, job: Job) -> None:
@@ -66,9 +78,13 @@ class JobRepository:
         with self.engine.begin() as conn:
             stmt = select(self.jobs_table).where(self.jobs_table.c.id == job.id)
             existing = conn.execute(stmt).fetchone()
-            
+
             if existing:
-                upd_stmt = update(self.jobs_table).where(self.jobs_table.c.id == job.id).values(**data)
+                upd_stmt = (
+                    update(self.jobs_table)
+                    .where(self.jobs_table.c.id == job.id)
+                    .values(**data)
+                )
                 conn.execute(upd_stmt)
             else:
                 ins_stmt = insert(self.jobs_table).values(**data)
@@ -86,7 +102,7 @@ class JobRepository:
         with self.engine.connect() as conn:
             stmt = select(self.jobs_table).where(
                 self.jobs_table.c.source == source,
-                self.jobs_table.c.source_job_id == source_job_id
+                self.jobs_table.c.source_job_id == source_job_id,
             )
             row = conn.execute(stmt).fetchone()
             if row:

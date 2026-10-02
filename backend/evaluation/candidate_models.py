@@ -26,11 +26,17 @@ APPROVED_TARGET_ROLES: Set[str] = {
 
 
 class Education(BaseModel):
-    degree: str = Field(..., description="Degree level/name, e.g. Bachelor of Technology")
-    field_of_study: str = Field(..., description="Field of study/major, e.g. Computer Science")
+    degree: str = Field(
+        ..., description="Degree level/name, e.g. Bachelor of Technology"
+    )
+    field_of_study: str = Field(
+        ..., description="Field of study/major, e.g. Computer Science"
+    )
     institution: Optional[str] = Field(None, description="Educational institution")
     graduation_year: Optional[int] = Field(None, description="Graduation year")
-    status: Optional[str] = Field(None, description="Status, e.g. completed, in_progress")
+    status: Optional[str] = Field(
+        None, description="Status, e.g. completed, in_progress"
+    )
 
 
 class WorkAuthorization(BaseModel):
@@ -96,7 +102,9 @@ class CandidateSkills(BaseModel):
 class ClaimRecord(BaseModel):
     id: str = Field(..., description="Unique claim ID, e.g. CLAIM-001")
     title: str = Field(..., description="Short title of the claim")
-    statement: str = Field(..., description="Factual statement of experience or achievement")
+    statement: str = Field(
+        ..., description="Factual statement of experience or achievement"
+    )
     verified: bool = Field(False, description="True if backed by verifiable artifact")
     verification_source: Optional[str] = Field(
         None,
@@ -123,7 +131,9 @@ class WorkExperienceRecord(BaseModel):
     location: Optional[str] = Field(None, description="Location of employment")
     work_mode: Optional[str] = Field(None, description="remote/hybrid/onsite")
     start_date: Optional[str] = Field(None, description="Start date (YYYY-MM)")
-    end_date: Optional[str] = Field(None, description="End date (YYYY-MM) or null if current")
+    end_date: Optional[str] = Field(
+        None, description="End date (YYYY-MM) or null if current"
+    )
     duration_months: Optional[int] = Field(None, description="Duration in months")
     verified: bool = Field(False, description="True if employment is verified")
     disclosure: DisclosureLevel = Field(
@@ -140,10 +150,16 @@ class ProjectRecord(BaseModel):
     id: str = Field(..., description="Unique project ID, e.g. PROJ-001")
     title: str = Field(..., description="Project title")
     domain: List[str] = Field(default_factory=list, description="Domains covered")
-    skills_used: List[str] = Field(default_factory=list, description="Skills demonstrated")
+    skills_used: List[str] = Field(
+        default_factory=list, description="Skills demonstrated"
+    )
     description: Optional[str] = Field(None, description="Project summary")
-    verified: bool = Field(False, description="True if project is verified by code/demo")
-    verification_source: Optional[str] = Field(None, description="Link or reference to code")
+    verified: bool = Field(
+        False, description="True if project is verified by code/demo"
+    )
+    verification_source: Optional[str] = Field(
+        None, description="Link or reference to code"
+    )
     disclosure: DisclosureLevel = Field(
         DisclosureLevel.UNDETERMINED,
         description="Disclosure level. Defaults to undetermined.",
@@ -160,7 +176,9 @@ class CandidateExperience(BaseModel):
 
 
 class CompensationPreference(BaseModel):
-    minimum_annual: Optional[float] = Field(None, description="Minimum expected annual compensation")
+    minimum_annual: Optional[float] = Field(
+        None, description="Minimum expected annual compensation"
+    )
     currency: Optional[str] = Field(None, description="Currency code, e.g. USD, INR")
 
 
@@ -197,6 +215,7 @@ class CandidateKB(BaseModel):
     Complete in-memory Candidate Knowledge Base.
     Composed of Profile, Skills, Claims, Experience, and Preferences.
     """
+
     profile: CandidateProfile
     skills: CandidateSkills
     claims: CandidateClaims

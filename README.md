@@ -101,5 +101,22 @@ AI Job Agent assists users throughout the job search process. Users remain respo
 
 ## ⭐ Project Status
 
-**Current Stage:** Phase 1 — Foundation (repository scaffolding, governance, and tooling)
+**Current Stage:** Phase 3 — Backend Foundation
+
+The API is runnable: versioned routers under `/api/v1`, bcrypt + JWT
+authentication, a service layer, and a test suite that runs without external
+services. Interactive docs are served at `/docs` once the stack is up.
+
+```bash
+# API surface now available
+POST /api/v1/auth/register   # create an account
+POST /api/v1/auth/login      # exchange credentials for a bearer token
+GET  /api/v1/users/me        # read/update the caller's profile
+GET  /api/v1/jobs            # list job postings
+POST /api/v1/jobs            # ingest a discovered posting
+```
+
+See [docs/10_API/Authentication.md](docs/10_API/Authentication.md) and
+[docs/10_API/Jobs.md](docs/10_API/Jobs.md) for the endpoint contracts.
+
 "# AI-Job-Agent" 

@@ -53,8 +53,14 @@ def _extract_eligibility(job: Job) -> List[str]:
                         eligibility_list.append(cleaned)
 
     # If not present on top-level Job.eligibility, check raw_source_reference for explicit fields
-    if not eligibility_list and job.raw_source_reference and isinstance(job.raw_source_reference, dict):
-        raw_elig = job.raw_source_reference.get("eligibility_requirements") or job.raw_source_reference.get("eligibility")
+    if (
+        not eligibility_list
+        and job.raw_source_reference
+        and isinstance(job.raw_source_reference, dict)
+    ):
+        raw_elig = job.raw_source_reference.get(
+            "eligibility_requirements"
+        ) or job.raw_source_reference.get("eligibility")
         if isinstance(raw_elig, list):
             eligibility_list.extend(_clean_str_list(raw_elig))
         elif isinstance(raw_elig, str):
@@ -93,10 +99,9 @@ def _extract_other_constraints(job: Job) -> List[str]:
     Never inferred.
     """
     if job.raw_source_reference and isinstance(job.raw_source_reference, dict):
-        raw_constraints = (
-            job.raw_source_reference.get("other_constraints")
-            or job.raw_source_reference.get("constraints")
-        )
+        raw_constraints = job.raw_source_reference.get(
+            "other_constraints"
+        ) or job.raw_source_reference.get("constraints")
         if isinstance(raw_constraints, list):
             return _clean_str_list(raw_constraints)
         elif isinstance(raw_constraints, str):

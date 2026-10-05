@@ -136,7 +136,7 @@ pytest
 
 Run the PostgreSQL integration suite when the database is available:
 
-```pytest
+```bash
 pytest -m postgres tests/integration_pg
 ```
 

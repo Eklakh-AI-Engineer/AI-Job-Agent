@@ -1,138 +1,200 @@
-# 🤖 AI Job Agent
+# AI Job Agent
 
-> **An Autonomous AI-Powered Career Operating System**
->
-> AI Job Agent is a cloud-native, multi-agent platform that continuously discovers relevant job opportunities, intelligently tailors application materials, and assists users throughout the hiring process. Running 24/7, it transforms the traditionally manual job search into an automated, data-driven workflow while keeping the user in control of critical decisions.
+> **A backend foundation for an AI-assisted career operating system.**
 
-[![CI](https://github.com/OWNER/AI-Job-Agent/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/AI-Job-Agent/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Docs](https://img.shields.io/badge/docs-available-blue.svg)](docs/)
+AI Job Agent is an evolving platform for job discovery, candidate/job matching, application assistance, and career workflow automation. The repository currently focuses on the **backend foundation and API delivery layer**; the broader autonomous multi-agent vision remains roadmap work.
+
+## Current status
+
+**Current documented milestone: Phase 3 — Backend Foundation.**
+
+| Area | Current status |
+|---|---|
+| FastAPI backend | Implemented |
+| Versioned API routing | Implemented |
+| Authentication | Implemented |
+| User profile endpoints | Implemented |
+| Job CRUD / ingestion foundation | Implemented |
+| PostgreSQL + pgvector integration | Implemented in stack |
+| Redis integration | Implemented in stack |
+| Alembic migrations | Implemented |
+| SQLite-backed fast tests | Implemented |
+| Real-Postgres integration tests | Implemented |
+| Autonomous job discovery | Roadmap |
+| Semantic matching agent | Roadmap / evolving |
+| Resume optimization agent | Roadmap |
+| Cover-letter generation | Roadmap |
+| Browser application automation | Roadmap |
+| Learning / career analytics | Roadmap |
+| Full production deployment | Not claimed |
+
+The project is intentionally **not** represented as a completed 24/7 autonomous application agent.
 
 ---
 
-## 📖 Overview
+## What exists today
 
-Modern hiring involves hundreds of job portals, multiple Applicant Tracking Systems (ATS), resume customization, cover letters, eligibility filtering, company research, application tracking, and interview preparation. AI Job Agent automates these repetitive tasks using a network of specialized AI agents.
+The current backend exposes versioned API routes under `/api/v1` and includes:
 
-## 🎯 Objectives
+- account registration and login;
+- bearer-token authentication;
+- caller profile access;
+- job posting ingestion and listing;
+- database-backed persistence;
+- health checks;
+- service-layer separation;
+- migration support;
+- local Docker Compose development.
 
-- Discover jobs automatically across boards, ATS platforms, and career pages
-- Match jobs to the user's profile using semantic AI
-- Optimize resumes for every job, truthfully and without fabrication
-- Generate personalized cover letters
-- Assist with (human-approved) applications
-- Track application history and outcomes
-- Learn from outcomes to improve future recommendations
+Interactive FastAPI documentation is available at `/docs` when the local API is running.
 
-## 🧠 Core Features
+### API examples
 
-| Feature | Description |
-|---|---|
-| Intelligent Job Discovery | Continuous monitoring of LinkedIn, Greenhouse, Lever, Ashby, Workday, career pages, RSS feeds |
-| AI Job Matching | Semantic scoring against skills, experience, location, and preferences |
-| Resume Intelligence | ATS-aware, keyword-aligned resume tailoring with zero fabrication |
-| Cover Letter Generation | Company- and role-specific personalized drafts |
-| Application Assistant | Browser-automated form filling with mandatory human approval gates |
-| Dashboard & Analytics | Applications, interviews, rejections, resume performance |
-| Career Intelligence | Long-term trend analysis across resumes, skills, and companies |
-
-## 🏗 System Architecture
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full breakdown.
-
-```
-Scheduler → Job Discovery / Company Research / JD Parser → Matching Agent
-   → Resume Optimization → Cover Letter Generator → ATS Validation
-   → Application Assistant (human approval) → Application Tracker
-   → Learning & Analytics → User Dashboard
+```text
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+GET  /api/v1/users/me
+GET  /api/v1/jobs
+POST /api/v1/jobs
+GET  /api/v1/jobs/{id}
+GET  /health
 ```
 
-## ⚙ Technology Stack
+See the detailed contracts under [docs/10_API/](docs/10_API/).
 
-See [TECH_STACK.md](TECH_STACK.md) for the full breakdown and rationale.
+---
 
-Backend: Python, FastAPI, PostgreSQL, Redis, Celery · AI: LLM + embeddings + reranking ·
-Automation: Playwright · Infra: Docker, Kubernetes, GitHub Actions · Cloud: AWS/GCP/Azure
+## Architecture
 
-## 📂 Repository Structure
+The current implementation should be understood as:
 
+```text
+Client
+  |
+  v
+FastAPI /api/v1
+  |
+  +--> Authentication / Authorization
+  |
+  +--> API Routers
+  |
+  +--> Service Layer
+  |
+  +--> Persistence
+          |
+          +--> PostgreSQL / pgvector
+          +--> Redis
+          +--> Alembic migrations
 ```
-AI-Job-Agent/
-├── docs/                  # Research, architecture, agent specs, API/DB docs
-├── backend/                # FastAPI application, agents, services
-├── tests/                  # Unit, integration, e2e tests
-├── deployment/              # Docker, Kubernetes, Terraform
-├── monitoring/               # Prometheus, Grafana, alerting rules
-├── scripts/                  # Dev and ops scripts
-└── .github/                  # CI/CD workflows, issue/PR templates
-```
 
-## 🚀 Getting Started
+The larger target architecture adds discovery, parsing, matching, resume optimization, application assistance, tracking, and analytics around this foundation. Those components are documented as **future scope**, not current implementation.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
+## Technology
+
+Current repository technology includes:
+
+- **Python**
+- **FastAPI**
+- **PostgreSQL + pgvector**
+- **Redis**
+- **SQLAlchemy**
+- **Alembic**
+- **Docker / Docker Compose**
+- **pytest**
+
+The repository also contains design documentation for future AI/automation components. Those planned technologies should not be interpreted as proof that every listed component is currently implemented.
+
+See [docs/TECH_STACK.md](docs/TECH_STACK.md).
+
+---
+
+## Local development
+
+Clone the repository using its actual path:
 
 ```bash
-git clone https://github.com/OWNER/AI-Job-Agent.git
+git clone https://github.com/Eklakh-AI-Engineer/AI-Job-Agent.git
 cd AI-Job-Agent
 cp .env.example .env
-make setup
-make up
 ```
 
-See [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) for full local setup, testing, and workflow instructions.
+Start the local stack:
 
-## 🛣 Roadmap
+```bash
+docker compose up -d --build
+```
 
-See [ROADMAP.md](ROADMAP.md) for phased milestones from foundation through production.
+Run the default test suite:
 
-## 🔒 Security
+```bash
+pytest
+```
 
-The project prioritizes secure authentication, encrypted secrets, least-privilege access, and mandatory human approval for any external submission action. See [SECURITY.md](SECURITY.md).
+Run the PostgreSQL integration suite when the database is available:
 
-## 🤝 Contributing
+```pytest
+pytest -m postgres tests/integration_pg
+```
 
-Contributions are welcome — please read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) first.
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the maintained development workflow.
 
-## 📜 License
+---
+
+## Verification
+
+The repository's current README records a previous verification baseline of:
+
+- **188 fast tests**
+- **13 real-Postgres integration tests**
+
+These figures are retained as **recorded verification**, not as a claim that the suite was freshly executed during this documentation maintenance.
+
+Run the suite locally or rely on CI before treating test counts as current evidence.
+
+---
+
+## Documentation
+
+| Document | Purpose |
+|---|---|
+| [Documentation index](docs/README.md) | Current docs and reference map |
+| [Architecture](docs/ARCHITECTURE.md) | Implemented backend boundary vs future platform |
+| [Development](docs/DEVELOPMENT.md) | Setup and testing |
+| [Tech stack](docs/TECH_STACK.md) | Current vs planned technology |
+| [Roadmap](docs/ROADMAP.md) | Future phases and milestones |
+| [Security](docs/SECURITY.md) | Security boundary and controls |
+| [API reference](docs/10_API/) | Detailed endpoint contracts |
+| [Deferred components](docs/deferred-components.md) | Explicitly deferred architecture |
+
+The numbered `docs/00_*` through `docs/11_*` directories contain the project's detailed research/specification corpus. The top-level files in `docs/` provide the maintained entry points.
+
+---
+
+## Engineering principles
+
+1. **Truthful scope** — implemented and planned functionality are explicitly separated.
+2. **Human control** — external application submission remains approval-gated by design.
+3. **Service boundaries** — routers should not absorb domain/service responsibilities.
+4. **Reproducibility** — tests, migrations, and local infrastructure should be repeatable.
+5. **No fabricated candidate claims** — resume/job tailoring must use the candidate's real qualifications.
+6. **Incremental autonomy** — automation should be added only after its supporting contracts are implemented and tested.
+
+---
+
+## Security and responsibility
+
+AI Job Agent assists with career workflows; it does not replace user judgment.
+
+Users remain responsible for reviewing generated materials and final submissions. Automated interaction with third-party job platforms must respect their terms and applicable policies.
+
+See [docs/SECURITY.md](docs/SECURITY.md).
+
+---
+
+## License
 
 Licensed under the [MIT License](LICENSE).
-
-## ⚠ Disclaimer
-
-AI Job Agent assists users throughout the job search process. Users remain responsible for reviewing application materials, ensuring their accuracy, and making final submission decisions. Resume tailoring must reflect the user's real qualifications, and interactions with third-party platforms must comply with their applicable terms of service.
-
-## ⭐ Project Status
-
-**Current Stage:** Phase 3 — Backend Foundation (Complete) → Phase 4 next
-
-The API is runnable end-to-end inside `docker compose`: versioned routers
-under `/api/v1`, bcrypt + JWT authentication, a service layer, real Postgres
-+ pgvector + Redis, Alembic migrations applied on container boot, and a
-two-tier test suite (fast SQLite-backed default + real-Postgres `-m postgres`).
-
-Interactive docs are served at `/docs` once the stack is up.
-
-```bash
-# Run the full stack (Postgres + pgvector + Redis + API) locally
-cp .env.example .env  # then edit secrets
-docker compose up -d --build
-
-# Run the test suites
-pytest                                  # 188 fast tests, no DB needed
-DATABASE_URL=postgresql+asyncpg://... \
-  pytest tests/integration_pg -m postgres   # 13 real-Postgres tests
-```
-
-```bash
-# API surface now available
-POST /api/v1/auth/register   # create an account
-POST /api/v1/auth/login      # exchange credentials for a bearer token
-GET  /api/v1/users/me        # read/update the caller's profile
-GET  /api/v1/jobs            # list job postings
-POST /api/v1/jobs            # ingest a discovered posting
-GET  /api/v1/jobs/{id}       # read a posting by id
-GET  /health                 # liveness + DB reachability
-```
-
-See [docs/10_API/Authentication.md](docs/10_API/Authentication.md) and
-[docs/10_API/Jobs.md](docs/10_API/Jobs.md) for the endpoint contracts.
-
-"# AI-Job-Agent" 

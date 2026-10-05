@@ -1,21 +1,27 @@
-# Documentation Index
+# AI Job Agent Documentation
 
-This is the documentation set for AI Job Agent, organized by concern. Status reflects the [ROADMAP](../ROADMAP.md) phase each section belongs to.
+## Current documentation
 
-| Folder | Covers | Status |
-|---|---|---|
-| [00_Project](00_Project/) | Vision, problem statement, objectives, scope, success metrics | Phase 2 |
-| [01_Research](01_Research/) | Market research, competitors, personas, business model, risk register | Phase 2 |
-| [02_Architecture](02_Architecture/) | System, agent, database, cloud, and API architecture | Phase 2–3 |
-| [03_AI](03_AI/) | Per-agent specifications (purpose, inputs, outputs, prompts, evaluation) | Phase 4–6 |
-| [04_Backend](04_Backend/) | Folder structure, coding standards, migrations | Phase 3 |
-| [05_Frontend](05_Frontend/) | Dashboard architecture, components, state management | Phase 7 |
-| [06_Deployment](06_Deployment/) | Docker, Kubernetes, CI/CD, cloud deployment | Phase 8 |
-| [07_Security](07_Security/) | Auth, secrets, OWASP, prompt-injection defenses, privacy | Ongoing |
-| [08_Testing](08_Testing/) | Testing strategy, benchmarking, agent evaluation | Ongoing |
-| [09_Business](09_Business/) | Pricing, go-to-market, revenue model | Phase 2 |
-| [10_API](10_API/) | REST API specifications per resource | Phase 3 |
-| [11_Database](11_Database/) | ERD, schema, indexes, migrations, backups | Phase 3 |
-| [diagrams](diagrams/) | Sequence diagrams, ERDs, architecture diagrams | Ongoing |
+| Document | Purpose |
+|---|---|
+| [Architecture](ARCHITECTURE.md) | Implemented backend boundary and future platform architecture |
+| [Development](DEVELOPMENT.md) | Local setup, Docker, tests, migrations |
+| [Tech Stack](TECH_STACK.md) | Current technology vs planned technologies |
+| [Roadmap](ROADMAP.md) | Current milestone and future phases |
+| [Security](SECURITY.md) | Authentication, authorization, secrets, and automation boundaries |
+| [API contracts](10_API/) | Detailed endpoint documentation |
+| [Deferred components](deferred-components.md) | Explicitly deferred work |
+| [Research](01_Research/) | Research and product background |
+| [Architecture specs](02_Architecture/) | Detailed architecture specifications |
+| [AI specs](03_AI/) | AI/agent design material |
+| [Backend specs](04_Backend/) | Backend implementation specifications |
+| [Testing](08_Testing/) | Test strategy and validation material |
+| [Database](11_Database/) | Database documentation |
 
-See [ARCHITECTURE.md](../ARCHITECTURE.md) and [TECH_STACK.md](../TECH_STACK.md) at the repo root for the current high-level design.
+## Documentation rule
+
+The top-level documents describe the **current repository state** and distinguish implemented behavior from planned architecture.
+
+The numbered documentation directories contain deeper specifications and research. A specification is not evidence that its proposed component has already been implemented.
+
+When documentation and runtime behavior disagree, implementation and tests are the source of truth; update the documentation rather than silently treating planned functionality as complete.

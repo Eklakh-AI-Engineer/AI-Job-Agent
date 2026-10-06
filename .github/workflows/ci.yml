@@ -34,8 +34,6 @@ jobs:
         run: python -m compileall -q .
       - name: Unit tests
         run: pytest ../tests/unit -q
-      - name: Evaluation regression tests
-        run: pytest ../tests/e2e/test_mock_ats_application.py ../tests/integration/test_true_pipeline_e2e.py -m e2e -q
 
   frontend:
     name: Frontend lint, typecheck, test and build

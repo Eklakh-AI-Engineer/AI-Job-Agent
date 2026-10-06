@@ -2,90 +2,46 @@
 
 ## Current implementation boundary
 
-The repository currently centers on a backend foundation:
-
-```text
-Client
-  |
-  v
-FastAPI /api/v1
-  |
-  +--> Auth / Authorization
-  |
-  +--> Routers
-  |
-  +--> Service Layer
-  |
-  +--> Persistence
-          |
-          +--> PostgreSQL + pgvector
-          +--> Redis
-          +--> Alembic
-```
-
-This is the implemented foundation described by the repository's current Phase 3 status.
-
-## Implemented responsibilities
-
-The backend foundation provides:
-
-- versioned API routing;
-- authentication and bearer-token handling;
-- user/profile access;
-- job posting ingestion and retrieval;
-- service-layer orchestration;
-- database persistence;
-- migrations;
-- health checks;
-- fast local tests;
-- PostgreSQL integration testing.
-
-## Target platform architecture
-
-The broader product vision is:
+The repository now contains discovery, candidate intelligence, document, application, automation, observability and frontend layers in addition to the original API foundation.
 
 ```text
 Job Sources
-    |
-    v
-Job Discovery
-    |
-    v
-Normalization / Deduplication
-    |
-    v
-JD Parsing / Company Research
-    |
-    v
-Candidate ↔ Job Matching
-    |
-    +--> Resume Optimization
-    |
-    +--> Cover Letter Generation
-    |
-    +--> ATS Validation
-    |
-    v
-Human-Approved Application Assistance
-    |
-    v
-Application Tracking
-    |
-    v
-Learning / Career Analytics
+  -> Greenhouse / Lever / Workday / Apify
+  -> discovery + normalization + deduplication
+  -> JobPosting persistence
+       -> requirement extraction + deterministic evaluation
+       -> embedding / lexical / hybrid search
+  -> Candidate Knowledge Base
+       -> documents + ATS analysis
+       -> application lifecycle + audit
+       -> human-gated Playwright automation
+  -> Next.js agent-oriented frontend
 ```
 
-The components after the current backend foundation should be treated as roadmap/specification work unless the corresponding implementation exists in the repository.
+## Implemented responsibilities
 
-## Architectural controls
+- FastAPI /api/v1, authentication and authorization
+- PostgreSQL + pgvector, SQLAlchemy and Alembic
+- Redis + Celery background infrastructure
+- Candidate KB persistence/versioning
+- Greenhouse, Lever, Workday and Apify discovery components
+- normalization, deduplication and job ingestion
+- deterministic requirement extraction and candidate-job evaluation
+- embedding providers and semantic/hybrid retrieval infrastructure
+- resume/cover-letter generation, review state and ATS analysis
+- application state, audit events and Playwright automation
+- Next.js frontend with dashboard, opportunities, copilot, documents, applications, activity and profile
+- Prometheus metrics and deployment scaffolding
 
-The system should preserve:
+## Known architectural gaps
 
-- human approval before external application submission;
-- service-layer separation;
-- explicit persistence boundaries;
-- authenticated API access;
-- testable deterministic components;
-- no fabrication of candidate qualifications.
+1. Evaluation still crosses a legacy job adapter; P0.3 tracks convergence on one canonical job representation.
+2. Listing discovery can persist a placeholder description; complete detail-page JD extraction is P1.1.
+3. Deterministic evaluation exists, but calibrated candidate-job ranking is still pending.
+4. Embedding provider/model/dimension compatibility needs a locked v1 contract.
+5. Current document rendering is text-based; professional PDF/DOCX artifacts remain pending.
+6. Browser automation needs deterministic mock-ATS and controlled real-ATS validation.
+7. The current E2E smoke test is an API health check, not the full product path.
+8. CI, observability and production deployment still require hardening.
 
-See the numbered architecture specifications under [02_Architecture](02_Architecture/) for deeper design material.
+See [PENDING_IMPLEMENTATION_PLAN.md](../PENDING_IMPLEMENTATION_PLAN.md).

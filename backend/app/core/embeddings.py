@@ -20,6 +20,12 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+# v1 storage/search contract. The database column is VECTOR(1536), so every
+# document and query embedding must use this exact dimensionality.
+EMBEDDING_VECTOR_DIMENSION = 1536
+DEFAULT_EMBEDDING_PROVIDER = "openai"
+DEFAULT_OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
+
 
 @dataclass
 class EmbeddingResult:
@@ -30,6 +36,29 @@ class EmbeddingResult:
     tokens_used: int
     cost_usd: float
     latency_ms: float
+
+
+def validate_embedding_dimensions(dimensions: int, *, model_name: str) -> None:
+    """Fail closed when a provider cannot satisfy the v1 pgvector contract."""
+    if dimensions != EMBEDDING_VECTOR_DIMENSION:
+        raise ValueError(
+            f"Embedding contract violation: model '{model_name}' produces "
+            f"{dimensions} dimensions; v1 requires {EMBEDDING_VECTOR_DIMENSION}. "
+            "Regenerate the vector schema before using a different dimension."
+        )
+
+
+def validate_embedding_result(result: EmbeddingResult) -> None:
+    """Validate both provider metadata and actual vector lengths."""
+    validate_embedding_dimensions(result.dimensions, model_name=result.model)
+    if len(result.embeddings) == 0:
+        return
+    actual_dimensions = {len(vector) for vector in result.embeddings}
+    if actual_dimensions != {EMBEDDING_VECTOR_DIMENSION}:
+        raise ValueError(
+            f"Embedding payload dimension mismatch for model '{result.model}': "
+            f"got {sorted(actual_dimensions)}, expected {EMBEDDING_VECTOR_DIMENSION}."
+        )
 
 
 class EmbeddingProvider(ABC):
@@ -384,7 +413,9 @@ class EmbeddingProviderFactory:
         if provider not in providers:
             raise ValueError(f"Unknown provider: {provider}. Supported: {list(providers.keys())}")
         
-        return providers[provider](**kwargs)
+        instance = providers[provider](**kwargs)
+        validate_embedding_dimensions(instance.dimensions, model_name=instance.model_name)
+        return instance
     
     @staticmethod
     def create_from_env() -> EmbeddingProvider:
@@ -392,17 +423,20 @@ class EmbeddingProviderFactory:
         provider_type = os.getenv("EMBEDDING_PROVIDER", "openai").lower()
         
         if provider_type == "openai":
-            return OpenAIEmbeddingProvider(
+            return EmbeddingProviderFactory.create(
+                "openai",
                 api_key=os.getenv("OPENAI_API_KEY"),
-                model=os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+                model=os.getenv("OPENAI_EMBEDDING_MODEL", DEFAULT_OPENAI_EMBEDDING_MODEL),
             )
         elif provider_type == "cohere":
-            return CohereEmbeddingProvider(
+            return EmbeddingProviderFactory.create(
+                "cohere",
                 api_key=os.getenv("COHERE_API_KEY"),
                 model=os.getenv("COHERE_EMBEDDING_MODEL", "embed-english-v3.0"),
             )
         elif provider_type == "local":
-            return LocalEmbeddingProvider(
+            return EmbeddingProviderFactory.create(
+                "local",
                 model_name=os.getenv("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"),
             )
         else:
@@ -422,7 +456,8 @@ def get_embedding_provider() -> EmbeddingProvider:
 
 
 def set_embedding_provider(provider: EmbeddingProvider) -> None:
-    """Set the global embedding provider (for testing)."""
+    """Set a test/provider override after enforcing the v1 contract."""
+    validate_embedding_dimensions(provider.dimensions, model_name=provider.model_name)
     global _provider
     _provider = provider
 
@@ -431,7 +466,37 @@ async def generate_embeddings(texts: List[str]) -> List[List[float]]:
     """Convenience function to generate embeddings using global provider."""
     provider = get_embedding_provider()
     result = await provider.embed(texts)
+    validate_embedding_result(result)
     return result.embeddings
+
+
+def validate_embedding_configuration() -> None:
+    """Validate configured model/dimension compatibility without API calls."""
+    provider_type = os.getenv("EMBEDDING_PROVIDER", DEFAULT_EMBEDDING_PROVIDER).lower()
+    if provider_type == "openai":
+        model = os.getenv("OPENAI_EMBEDDING_MODEL", DEFAULT_OPENAI_EMBEDDING_MODEL)
+        dimensions = OpenAIEmbeddingProvider.DIMENSIONS.get(model)
+        if dimensions is None:
+            raise ValueError(f"Unknown OpenAI embedding model: {model}")
+    elif provider_type == "cohere":
+        model = os.getenv("COHERE_EMBEDDING_MODEL", "embed-english-v3.0")
+        dimensions = CohereEmbeddingProvider.DIMENSIONS.get(model)
+        if dimensions is None:
+            raise ValueError(f"Unknown Cohere embedding model: {model}")
+    elif provider_type == "local":
+        model = os.getenv("LOCAL_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+        # The local provider determines dimensions from the loaded model. Keep
+        # startup validation conservative for known bundled/default models.
+        if model == "sentence-transformers/all-MiniLM-L6-v2":
+            dimensions = 384
+        else:
+            raise ValueError(
+                "Local embedding model dimensions cannot be validated without loading the model; "
+                "use the v1 OpenAI contract or add an explicit 1536-dimension local model mapping."
+            )
+    else:
+        raise ValueError(f"Unknown EMBEDDING_PROVIDER: {provider_type}")
+    validate_embedding_dimensions(dimensions, model_name=model)
 
 
 def compute_text_hash(text: str) -> str:

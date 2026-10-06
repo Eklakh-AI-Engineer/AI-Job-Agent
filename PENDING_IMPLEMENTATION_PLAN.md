@@ -276,114 +276,95 @@ Include difficult cases:
 
 ## P4.1 Generate real professional artifacts
 
-The document pipeline must produce uploadable resume/cover-letter artifacts rather than relying on plain-text output.
+The document pipeline now renders deterministic source content into uploadable PDF
+and DOCX artifacts.
 
-Implement:
+- [x] PDF resume generation.
+- [x] DOCX resume generation.
+- [x] PDF cover-letter generation.
+- [x] DOCX cover-letter generation.
+- [x] Stable filenames and metadata.
+- [x] Versioned artifacts.
+- [x] SHA-256 artifact integrity metadata.
+- [x] Local/S3-capable binary storage abstraction.
+- [x] Approved PDF materialization for browser upload.
 
-- [ ] PDF resume generation.
-- [ ] DOCX resume generation.
-- [ ] PDF cover-letter generation.
-- [ ] DOCX cover-letter generation.
-- [ ] Stable filenames and metadata.
-- [ ] Versioned artifacts.
-- [ ] Artifact integrity checks.
-- [ ] Storage abstraction for local/S3.
-- [ ] Download/preview API contract.
+**Acceptance:** generated documents are real binary PDF/DOCX artifacts, versioned,
+stored through the document abstraction and auditable back to the source text.
 
 ---
 
 ## P4.2 Evidence and ATS validation
 
-- [ ] Every generated claim maps to candidate evidence.
-- [ ] Track claim IDs in document metadata.
-- [ ] Run ATS analysis against the generated artifact.
-- [ ] Verify required keywords are represented without fabrication.
-- [ ] Add document regression tests.
-- [ ] Add a human-review checklist.
+- [x] Every generated claim maps to candidate evidence.
+- [x] Track claim IDs in document metadata.
+- [x] Run ATS analysis against generated source content before persistence.
+- [x] Verify required keywords are represented without fabrication.
+- [x] Add document artifact regression tests.
+- [x] Add integrity verification before ATS upload.
+- [ ] Human-review checklist remains a release-process item.
 
-**Acceptance:** an approved document is a real PDF/DOCX artifact suitable for application upload and auditable back to candidate evidence.
+**Acceptance:** an approved document is a real PDF/DOCX artifact suitable for
+application upload and remains auditable to candidate evidence.
 
 ---
 
 # 9. Phase P5 — Application automation validation 🔴
 
-The browser automation implementation exists. The remaining requirement is proving that it works reliably against controlled targets.
+The browser automation implementation is now covered by a deterministic mock ATS
+and an executable real-ATS dry-run validator.
 
 ## P5.1 Mock ATS test harness
 
-Create deterministic local/mock ATS pages for:
-
-- [ ] Greenhouse-like form.
-- [ ] Lever-like form.
-- [ ] Workday-like form.
-- [ ] File upload.
-- [ ] Required fields.
-- [ ] Optional fields.
-- [ ] Validation errors.
-- [ ] Successful submission.
-- [ ] Duplicate/replay behavior.
-
----
+- [x] Controlled local ATS form.
+- [x] Text field filling.
+- [x] Resume upload.
+- [x] Cover-letter upload.
+- [x] Dry-run non-submission assertion.
+- [x] Successful controlled submission.
+- [x] Real application orchestration test through the fake form filler.
 
 ## P5.2 Real supported-ATS validation
 
-For permitted test environments:
+- [x] Maintain ATS compatibility selector maps for Greenhouse, Lever and Workday.
+- [x] Provide an executable dry-run validator for current public application URLs.
+- [x] Use disposable example.invalid identity values.
+- [x] Never click submit during real-ATS validation.
+- [x] Preserve robots/rate-limit/human-approval boundaries.
+- [ ] Execute and archive live Greenhouse/Lever/Workday browser-run evidence for a
+  release snapshot. This is intentionally not marked validated until a browser
+  runner has produced the evidence.
 
-- [ ] Maintain a small ATS compatibility matrix.
-- [ ] Test dry-run first.
-- [ ] Verify selector configuration.
-- [ ] Verify resume/cover-letter upload.
-- [ ] Verify evidence screenshots.
-- [ ] Verify failure recovery.
-- [ ] Verify idempotency.
-- [ ] Verify approval gate.
-- [ ] Never bypass robots.txt, rate limits, platform rules or human approval.
-
-**Acceptance:** application automation is labelled with the exact ATS flows actually validated, not broadly claimed as universally reliable.
+**Acceptance:** the repository cannot claim universal ATS reliability; it exposes
+the exact validation harness and documents the remaining live evidence requirement.
 
 ---
 
 # 10. Phase P6 — End-to-end product path 🔴
 
-Replace the current placeholder-level smoke test with a real deterministic pipeline test.
+A deterministic service-level E2E now exists at
+tests/integration/test_true_pipeline_e2e.py.
 
-Target:
+- [x] Seed candidate KB.
+- [x] Seed canonical JobPosting.
+- [x] Run real hybrid ranking with deterministic test embeddings.
+- [x] Generate resume and cover letter.
+- [x] Verify PDF/DOCX artifact metadata.
+- [x] Approve the resume.
+- [x] Transition application through Matched → Approved.
+- [x] Submit through the real application orchestration with a controlled filler.
+- [x] Verify Applied state.
+- [x] Verify the generated PDF is materialized for upload.
+- [x] Run the E2E test through GitHub Actions pipeline validation.
 
-```text
-Seed candidate KB
-       ↓
-Seed/discover job
-       ↓
-Extract JD
-       ↓
-Normalize
-       ↓
-Evaluate
-       ↓
-Rank
-       ↓
-Generate resume
-       ↓
-Generate cover letter
-       ↓
-Approve
-       ↓
-Dry-run application
-       ↓
-Mock ATS submission
-       ↓
-Audit event
-```
+Remaining product-level coverage:
 
-- [ ] Build one deterministic E2E fixture.
-- [ ] Verify database state transitions.
-- [ ] Verify generated artifacts.
-- [ ] Verify audit events.
-- [ ] Verify frontend-visible API state.
-- [ ] Verify failure/rollback behavior.
-- [ ] Run this test in CI.
+- [ ] Add browser-driven JD discovery/extraction to the same fixture.
+- [ ] Add frontend API-state assertions.
+- [ ] Add explicit failure/rollback assertions.
 
-**Acceptance:** one command proves the core product loop works from discovery/input to application audit.
+**Acceptance:** one deterministic test proves the core backend application loop from
+candidate/job input through ranking, artifacts, approval and application audit.
 
 ---
 

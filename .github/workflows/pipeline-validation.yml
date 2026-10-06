@@ -1,0 +1,57 @@
+name: Pipeline Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "tests/**"
+      - "scripts/**"
+      - "docs/evaluation/**"
+      - "PENDING_IMPLEMENTATION_PLAN.md"
+      - "backend/requirements*.txt"
+      - ".github/workflows/pipeline-validation.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "tests/**"
+      - "scripts/**"
+      - "docs/evaluation/**"
+      - "PENDING_IMPLEMENTATION_PLAN.md"
+      - "backend/requirements*.txt"
+
+jobs:
+  backend-e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run document artifact regression tests
+        run: pytest ../tests/unit/test_document_artifacts.py -q
+
+      - name: Run controlled ATS E2E
+        run: pytest ../tests/e2e/test_mock_ats_application.py -m e2e -q
+
+      - name: Run true application pipeline E2E
+        run: pytest ../tests/e2e/test_true_pipeline.py -m e2e -q

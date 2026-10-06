@@ -19,6 +19,7 @@ from app.services.candidate_kb_service import (
 from app.services.job_discovery_service import get_job_by_id as get_job_by_id_service
 from backend.evaluation.candidate_models import CandidateKB
 from backend.evaluation.evaluator import evaluate_candidate_against_job
+from backend.evaluation.hybrid_ranker import rank_candidate_job
 from backend.evaluation.models import EvaluationResult
 from backend.evaluation.requirements import extract_requirements
 
@@ -64,9 +65,11 @@ async def evaluate_job_for_user(
     candidate_kb = await load_candidate_kb(db, user_id)
 
     # 5. Run evaluation (Phase 3C)
-    result = evaluate_candidate_against_job(job_requirements, candidate_kb)
-
-    return result
+    result, components = await rank_candidate_job(job, candidate_kb)
+    return result.model_copy(update={
+        "ranking_components": components,
+        "ranking_version": "hybrid-v1",
+    })
 
 
 async def evaluate_job_with_kb(
@@ -79,4 +82,8 @@ async def evaluate_job_with_kb(
     Useful for batch evaluation or when KB is already loaded.
     """
     job_requirements = extract_requirements(job)
-    return evaluate_candidate_against_job(job_requirements, candidate_kb)
+    result, components = await rank_candidate_job(job, candidate_kb)
+    return result.model_copy(update={
+        "ranking_components": components,
+        "ranking_version": "hybrid-v1",
+    })

@@ -169,19 +169,33 @@ async def generate_cover_letter(
         status=STATUS_DRAFT,
         version=version,
         content=content,
-        meta={"company": job.company, "role": job.title},
+        meta={"company": job.company, "role": job.title, "artifact_version": 1},
         used_claim_ids=letter.used_claim_ids,
     )
     db.add(doc)
     await db.flush()
 
     if store_artifact:
-        key = build_document_key(user_id, job_id, DOC_TYPE_COVER_LETTER, version)
         try:
-            await get_document_storage().put(key, content)
-            doc.storage_key = key
+            storage = get_document_storage()
+            text_key = build_document_key(user_id, job_id, DOC_TYPE_COVER_LETTER, version, "txt")
+            await storage.put(text_key, content)
+            artifacts = build_artifacts(
+                content, doc_type=DOC_TYPE_COVER_LETTER, user_id=user_id, job_id=job_id, version=version
+            )
+            artifact_meta = {}
+            for fmt, artifact in artifacts.items():
+                key = build_document_key(user_id, job_id, DOC_TYPE_COVER_LETTER, version, fmt)
+                await storage.put_bytes(key, artifact["bytes"], artifact["content_type"])
+                artifact_meta[fmt] = {k: v for k, v in artifact.items() if k != "bytes"}
+                artifact_meta[fmt]["storage_key"] = key
+            meta = dict(doc.meta or {})
+            meta["artifacts"] = artifact_meta
+            doc.meta = meta
+            doc.storage_key = artifact_meta["pdf"]["storage_key"]
         except Exception as exc:  # noqa: BLE001
-            logger.warning(f"Failed to store cover letter artifact: {exc}")
+            logger.exception("Failed to store cover-letter artifacts")
+            raise DocumentGenerationError(f"Failed to persist cover-letter artifacts: {exc}") from exc
 
     await db.commit()
     await db.refresh(doc)

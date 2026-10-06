@@ -135,6 +135,10 @@ async def _materialize_approved_doc(
 
     artifacts = (doc.meta or {}).get("artifacts", {})
     artifact = artifacts.get("pdf")
+    if not artifact and doc.storage_key:
+        # Backward-compatible fallback for documents whose canonical PDF key
+        # was persisted before nested artifact metadata was refreshed.
+        artifact = {"storage_key": doc.storage_key}
     if not artifact or not artifact.get("storage_key"):
         logger.warning("Approved %s document has no PDF artifact", doc_type)
         return None

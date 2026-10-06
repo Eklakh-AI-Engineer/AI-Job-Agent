@@ -73,7 +73,7 @@ test("live frontend critical path uses the running backend", async ({ page, requ
   expect(jobsHttp.status()).toBe(200);
   const jobsPayload = await jobsHttp.json();
   expect(jobsPayload.items.some((item) => item.id === job.id)).toBeTruthy();
-  await expect(page.getByText("Opportunities")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Opportunities" })).toBeVisible();
   await page.getByRole("button", { name: /All/ }).click();
   await expect(page.getByText(jobTitle)).toBeVisible();
 

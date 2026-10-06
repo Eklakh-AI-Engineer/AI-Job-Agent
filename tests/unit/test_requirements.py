@@ -213,7 +213,7 @@ def test_extract_requirements_type_and_value_errors():
     with pytest.raises(TypeError, match="Job cannot be None"):
         extract_requirements(None)
 
-    with pytest.raises(TypeError, match="Expected Job instance"):
+    with pytest.raises(TypeError, match="Expected JobPosting-like instance"):
         extract_requirements({"title": "Not a job"})
 
     invalid_job = Job(
@@ -255,6 +255,7 @@ def test_extract_requirements_accepts_canonical_job_posting():
     from app.models.job import JobPosting
 
     job = JobPosting(
+        id=1,
         title="Machine Learning Engineer",
         company="Example",
         location="Remote",

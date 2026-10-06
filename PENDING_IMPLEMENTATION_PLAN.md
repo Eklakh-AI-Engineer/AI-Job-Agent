@@ -368,190 +368,123 @@ candidate/job input through ranking, artifacts, approval and application audit.
 
 ---
 
-# 11. Phase P7 — CI and reproducibility 🟠
+# 11. Phase P7 — Backend + frontend CI 🟠
 
-Current GitHub automation should be expanded beyond CodeQL/Docker publishing.
+A standard CI workflow now exists at .github/workflows/ci.yml.
 
-Create a standard CI workflow that verifies:
+- [x] Python dependency installation.
+- [x] Backend compileall gate.
+- [x] Backend unit tests.
+- [x] Frontend dependency installation with npm ci.
+- [x] Frontend lint.
+- [x] Frontend TypeScript compilation.
+- [x] Frontend tests.
+- [x] Next.js production build.
+- [x] Repository-wide CodeQL remains enabled.
+- [ ] Final green-run evidence after the latest evaluator/security fixes.
 
-- [ ] Python dependency installation.
-- [ ] Unit tests.
-- [ ] Integration tests where services are available.
-- [ ] Database migrations.
-- [ ] Frontend dependency installation.
-- [ ] Frontend tests.
-- [ ] TypeScript compilation.
-- [ ] Next.js production build.
-- [ ] Lint.
-- [ ] E2E smoke test.
-- [ ] Evaluation regression where practical.
-
-Add caching and service containers where appropriate.
-
-**Acceptance:** a fresh GitHub commit produces machine-verifiable backend + frontend health signals.
+**Acceptance:** a fresh commit produces machine-verifiable backend and frontend health signals.
 
 ---
 
 # 12. Phase P8 — Frontend integration validation 🟠
 
-The frontend implementation is already present and should not be rebuilt.
+The frontend implementation is preserved and its build/test toolchain is now a release gate.
 
-Remaining work:
+- [x] Frontend build, lint, typecheck and unit tests are CI-gated.
+- [x] Candidate KB helper tests are present.
+- [ ] Verify every frontend API call against live backend endpoints.
+- [ ] Verify authentication expiry/401 behavior in browser QA.
+- [ ] Verify loading/empty/error states against live responses.
+- [ ] Verify candidate KB save/load round trip against a running backend.
+- [ ] Verify evaluation display against real ranking responses.
+- [ ] Verify document generation/approval workflow end-to-end.
+- [ ] Verify application dry-run and approval gates in browser UI.
+- [ ] Record a browser-level smoke run for the primary supported viewport.
 
-- [ ] Verify every frontend API call maps to a live backend endpoint.
-- [ ] Test authentication expiry/401 behavior.
-- [ ] Test empty/loading/error states.
-- [ ] Test candidate KB save/load round trip.
-- [ ] Test evaluation display against real API responses.
-- [ ] Test document generation/approval workflow.
-- [ ] Test application dry-run and approval gates.
-- [ ] Test responsive behavior on the primary supported viewport range.
-- [ ] Record frontend build evidence in CI.
-
-**Acceptance:** frontend is not merely visually complete; its critical workflows are backed by real API behavior.
+**Acceptance:** critical frontend workflows are backed by live API behavior, not only compile-time checks.
 
 ---
 
 # 13. Phase P9 — Observability and production hardening 🟠
 
-## P9.1 Observability
+Implemented baseline controls are documented in docs/OBSERVABILITY.md.
 
-- [ ] Add Grafana dashboards for:
-  - API latency/error rate;
-  - discovery throughput;
-  - duplicate rate;
-  - embedding failures;
-  - evaluation throughput;
-  - application success/failure;
-  - Celery queue/task health.
-- [ ] Add distributed tracing with OpenTelemetry.
-- [ ] Correlate request/task/application IDs.
+- [x] Prometheus HTTP/database/Celery/auth/job/embedding/search metrics.
+- [x] Request-ID correlation and structured production logging.
+- [x] Production secret validation.
+- [x] Explicit production CORS.
+- [x] Production API docs disabled.
+- [x] Baseline HTTP security headers.
+- [ ] Restrict /metrics at ingress/network layer.
+- [ ] Add alert delivery and operator dashboard.
+- [ ] Database backup/restore evidence.
+- [ ] Load-test baseline and capacity report.
+- [ ] Harden Kubernetes placeholders, resources, HPA, PDB and NetworkPolicies.
+- [ ] External secret management in the target deployment.
 
-## P9.2 Reliability
-
-- [ ] Database backup strategy.
-- [ ] Restore procedure.
-- [ ] RPO/RTO targets.
-- [ ] Load test baseline.
-- [ ] Capacity assumptions.
-- [ ] Alert thresholds.
-- [ ] Celery failure/retry monitoring.
-
-## P9.3 Kubernetes hardening
-
-Existing manifests should be hardened rather than treated as proof of production readiness.
-
-- [ ] Replace placeholder image references.
-- [ ] Replace example hostnames.
-- [ ] Add HPA.
-- [ ] Add PodDisruptionBudget.
-- [ ] Add NetworkPolicies.
-- [ ] Add readiness/liveness probes where missing.
-- [ ] Add resource requests/limits.
-- [ ] Use external/sealed secrets.
-- [ ] Add frontend deployment/ingress only if production deployment is actually targeted.
+**Acceptance:** operational signals and deployment controls are backed by an actual target environment, not only local configuration.
 
 ---
 
 # 14. Phase P10 — Security and responsible automation 🟠
 
-- [ ] Review all secret/config paths.
-- [ ] Confirm no credentials or tokens are committed.
-- [ ] Run dependency vulnerability scanning.
-- [ ] Review SSRF exposure in URL-fetching/discovery components.
-- [ ] Review arbitrary file upload/document handling.
-- [ ] Review browser automation domain restrictions.
-- [ ] Verify authentication and authorization on every sensitive API.
-- [ ] Verify rate limits on expensive endpoints.
-- [ ] Verify application automation remains approval-gated.
-- [ ] Document third-party platform/ATS usage constraints.
+A first-pass security review is documented in docs/SECURITY_REVIEW.md.
+
+- [x] Production secrets/defaults reviewed.
+- [x] Authentication rate limits reviewed.
+- [x] CORS and browser security headers hardened.
+- [x] Production API documentation disabled.
+- [x] CodeQL workflow present.
+- [x] Browser automation remains approval-gated and dry-run capable.
+- [x] Artifact SHA-256 integrity checked before browser upload.
+- [ ] Dependency vulnerability scan in CI.
+- [ ] SSRF review of all arbitrary URL-fetch paths.
+- [ ] Sensitive-file upload/path traversal review.
+- [ ] Browser automation domain allowlist enforcement review.
+- [ ] Full authorization matrix test for sensitive endpoints.
+- [ ] Production metrics endpoint network restriction.
+
+**Acceptance:** every high-impact external side effect and sensitive API has an explicit security control and regression test.
 
 ---
 
-# 15. Phase P11 — Analytics and learning loop 🟡
+# 15. Phase P11 — Outcome analytics and learning loop 🟡
 
-Once applications are actually being tracked, capture outcomes:
+A pure offline analytics layer now exists at backend/evaluation/outcome_metrics.py.
 
-```text
-Recommendation
-      ↓
-Application
-      ↓
-Interview / rejection / offer
-      ↓
-Outcome data
-      ↓
-Ranking analysis
-      ↓
-Future calibration
-```
+- [x] Application funnel metrics.
+- [x] State transition rates.
+- [x] Apply rate by ranking-score bucket.
+- [x] Apply rate by job source.
+- [x] Unit tests for the analytics primitives.
+- [x] Safe offline learning-loop procedure documented.
+- [ ] Capture interview/response/offer outcomes in the production data model.
+- [ ] Build a recurring anonymized outcome export.
+- [ ] Run real outcome analysis after sufficient application volume.
+- [ ] Evaluate ranking changes against the frozen golden benchmark.
 
-Implement:
-
-- [ ] Application outcome taxonomy.
-- [ ] Interview/outcome timestamps.
-- [ ] Recommendation-to-application conversion.
-- [ ] Application-to-interview conversion.
-- [ ] Interview-to-offer conversion.
-- [ ] Source quality.
-- [ ] Skill-gap analytics.
-- [ ] Post-application feedback.
-- [ ] Offline re-ranking experiments.
-
-Do not claim “learning” until real outcome data exists.
+**Important:** this is analytics infrastructure, not claimed online learning. Automatic retraining remains disabled.
 
 ---
 
-# 16. Phase P12 — Portfolio-grade engineering evidence 🟠
+# 16. Phase P12 — Architecture, tradeoffs and failure analysis 🟠
 
-For each flagship capability, publish evidence rather than marketing claims.
+Portfolio-grade engineering evidence is now substantially documented.
 
-## Architecture
+- [x] Current system architecture diagram/documentation.
+- [x] Architecture decision/tradeoff record.
+- [x] Failure analysis with real implementation failures.
+- [x] Golden-set methodology and metric definitions.
+- [x] Human-gold provenance boundary documented.
+- [x] ATS safety boundary documented.
+- [ ] Add a rendered discovery → ranking → application sequence diagram.
+- [ ] Add data-model diagram.
+- [ ] Add browser-automation safety-boundary diagram.
+- [ ] Publish baseline vs improved ranking metrics after human-verified data exists.
+- [ ] Add human-reviewed false-positive/false-negative cases.
 
-- [ ] System architecture diagram.
-- [ ] Discovery → matching → application sequence diagram.
-- [ ] Data model diagram.
-- [ ] Browser automation safety boundary diagram.
-
-## Evaluation
-
-- [ ] Golden dataset methodology.
-- [ ] Metric definitions.
-- [ ] Baseline vs improved ranking results.
-- [ ] Failure cases.
-- [ ] Error analysis.
-
-## Tradeoffs
-
-Document decisions such as:
-
-- [ ] deterministic vs LLM-based extraction;
-- [ ] lexical vs dense vs hybrid retrieval;
-- [ ] embedding model choice;
-- [ ] synchronous vs Celery execution;
-- [ ] browser automation vs API integration;
-- [ ] human approval vs full autonomy;
-- [ ] PostgreSQL/pgvector vs external vector DB.
-
-## Failure analysis
-
-Include at least 2–3 real examples:
-
-- [ ] false positive;
-- [ ] false negative;
-- [ ] JD extraction failure;
-- [ ] browser automation failure;
-- [ ] document/evidence failure.
-
-Each should state:
-
-```text
-Observed failure
-→ Root cause
-→ Impact
-→ Fix
-→ Regression test
-```
+**Acceptance:** a reviewer can understand not only what the system does, but why the architecture was chosen, where it failed, and how regressions are prevented.
 
 ---
 

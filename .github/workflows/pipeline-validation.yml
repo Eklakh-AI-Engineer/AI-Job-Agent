@@ -54,4 +54,4 @@ jobs:
         run: pytest ../tests/e2e/test_mock_ats_application.py -m e2e -q
 
       - name: Run true application pipeline E2E
-        run: pytest ../tests/e2e/test_true_pipeline.py -m e2e -q
+        run: pytest ../tests/integration/test_true_pipeline_e2e.py -m e2e -q

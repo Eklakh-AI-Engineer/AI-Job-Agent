@@ -229,6 +229,21 @@ class JobRequirements(BaseModel):
         description="Any other constraints not captured above.",
     )
 
+    normalization_version: str = Field(
+        "requirements-v1",
+        description="Version of the deterministic requirement normalization contract.",
+    )
+    field_provenance: dict[str, str] = Field(
+        default_factory=dict,
+        description="Per-field provenance: explicit, explicit_normalized, unknown, or date-validation status.",
+    )
+    extraction_confidence: float = Field(
+        0.0,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in the extracted structured fields; no inference is implied.",
+    )
+
 
 # ---------------------------------------------------------------------------
 # Skill Match

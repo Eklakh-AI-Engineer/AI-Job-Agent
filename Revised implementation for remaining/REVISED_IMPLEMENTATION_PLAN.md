@@ -1,7 +1,7 @@
 # Revised Implementation Plan - AI Job Agent
 
 **Last Updated:** 2026-10-06  
-**Status:** Phases 0–5 Complete ✅
+**Status:** Phases 0–9 Complete ✅
 
 ---
 
@@ -15,6 +15,10 @@
 | **Phase 3** | Discovery → Ingestion Pipeline | ✅ **COMPLETE** |
 | **Phase 4** | Embeddings + Semantic Matching | ✅ **COMPLETE** |
 | **Phase 5** | Candidate KB Integration | ✅ **COMPLETE** |
+| **Phase 6** | Document Generation (Resume, Cover Letter, ATS) | ✅ **COMPLETE** |
+| **Phase 7** | Application Workflow | ✅ **COMPLETE** |
+| **Phase 8** | Browser Automation | ✅ **COMPLETE** |
+| **Phase 9** | Dashboard (Frontend) | ✅ **COMPLETE** |
 | Phase 6 | Document Generation (Resume, Cover Letter, ATS) | ⏳ Pending |
 | Phase 7 | Application Workflow | ⏳ Pending |
 | Phase 8 | Browser Automation | ⏳ Pending |
@@ -585,26 +589,482 @@ celery==5.6.3            # Task queue
 
 ---
 
-## Next Steps: Phase 6 - Document Generation (Resume, Cover Letter, ATS)
+## Phase 6: Document Generation (Resume, Cover Letter, ATS) - COMPLETED ✅
 
-### 6.1 Resume Tailoring
-- Template engine (Jinja2/LaTeX) using candidate claims → tailored resume
-- Disclosure filtering: only public claims in generated documents
-- ATS keyword optimization from `JobRequirements.required_skills`
-- PDF generation (WeasyPrint/LaTeX)
+### 6.1 GeneratedDocument Model ✅
+**File:** `backend/app/models/document.py`
+- `user_id`, `job_posting_id` (FKs, CASCADE, indexed)
+- `doc_type` (resume | cover_letter), `status` (draft | approved | rejected)
+- `version`, `content` (rendered text), `meta` (JSON: ATS, sections)
+- `used_claim_ids` (JSON audit trail), `storage_key`
+- Relationships added to `User` and `JobPosting`
 
-### 6.2 Cover Letter Generation
-- Personalized letter from job + candidate KB
-- LLM-based with strict "no fabricated claims" guardrails
-- Fallback deterministic template
+**Migration:** `backend/alembic/versions/b3f8c2d9e1a4_add_generated_documents.py`
+- Chain: `b3f8c2d9e1a4 → 9a1c4d7e2f5b → 8f7e2a1b9c3d → 3cebe9a2cfbf`
 
-### 6.3 Artifact Storage
-- Store generated docs (S3/filesystem)
-- Link to `ApplicationStatus.tailored_resume_s3_key` / `cover_letter_s3_key`
+### 6.2 Artifact Storage Abstraction ✅
+**File:** `backend/app/services/document_storage.py`
+- `DocumentStorage` ABC
+- `LocalFilesystemStorage` (default) — with path-traversal rejection
+- `S3Storage` — boto3-based, lazy import (AWS S3 / MinIO / R2)
+- Backend selected via `DOCUMENT_STORAGE_BACKEND` (local | s3)
+- `build_document_key()` — deterministic `users/{u}/jobs/{j}/{type}/v{n}.txt`
 
-### 6.4 Human Review Workflow
-- `PATCH /api/v1/documents/{id}` - edit/approve/reject
-- Approval gate before application submission
+### 6.3 ATS Optimization Service ✅
+**File:** `backend/app/services/ats_service.py`
+- Deterministic keyword extraction (required first, de-duplicated)
+- `analyze_ats()` — weighted score (required 70%, preferred 30%)
+- Matched / missing keyword lists
+- Distinguishes **addable** keywords (candidate has public evidence) from
+  **unbacked** keywords ("do not fabricate")
+- Multi-word phrase matching + stopword filtering
+
+### 6.4 Resume Tailoring Service ✅
+**File:** `backend/app/services/resume_service.py`
+- `build_tailored_resume()` — public evidence only
+- Skills ordered by job relevance; restricted skills excluded
+- Experience/projects from public claims with audit trail
+- Deterministic summary (no fabrication)
+- Rendered plain-text, ATS-friendly output
+- `used_claim_ids` records every referenced claim (public only)
+
+### 6.5 Cover Letter Service ✅
+**File:** `backend/app/services/cover_letter_service.py`
+- `build_cover_letter()` — deterministic, evidence-grounded
+- References matched skills + one relevant public claim as concrete example
+- Education/eligibility from profile
+- Never invents achievements/employers
+- `used_claim_ids` audit trail
+
+### 6.6 Orchestration + Human Review ✅
+**File:** `backend/app/services/document_service.py`
+- `generate_resume()` / `generate_cover_letter()` — load job + KB, extract
+  requirements, generate, persist draft, store artifact (best-effort)
+- `list_documents()` with job/type/status filters
+- `get_document()` — ownership-scoped
+- `update_document_status()` — approve/reject (human-review gate)
+- `update_document_content()` — manual edit resets to draft
+- `regenerate_document()` — new version
+
+### 6.7 Document API ✅
+**File:** `backend/app/api/v1/documents.py`
+- `POST /api/v1/documents/generate` — generate resume/cover letter
+- `GET /api/v1/documents` — list (filters: job_id, doc_type, status)
+- `GET /api/v1/documents/{id}` — fetch one
+- `PATCH /api/v1/documents/{id}` — manual edit (resets to draft)
+- `POST /api/v1/documents/{id}/status` — approve/reject
+- `POST /api/v1/documents/{id}/regenerate` — new version
+
+**Schemas:** `backend/app/schemas/document.py`
+
+### 6.8 Celery Tasks ✅
+**File:** `backend/app/tasks/documents.py`
+- `generate_document_task(user_id, job_id, doc_type)` — background generation
+- `generate_all_documents_task(user_id, job_id)` — resume + cover letter
+
+### 6.9 Disclosure Enforcement ✅
+- Restricted/undetermined skills, claims, experience, projects are excluded
+  from all generated documents
+- Verified by tests asserting restricted content never appears in output
+
+### 6.10 Tests ✅
+**File:** `tests/unit/test_document_services.py` - 20 tests (all pass)
+- ATS: keyword extraction, matching, score bounds, no-fabrication reporting
+- Resume: restricted exclusion, public-only claims, relevance ordering, rendering
+- Cover letter: grounding, restricted exclusion
+- Storage: round-trip, path-traversal rejection
+- Orchestration: draft generation, listing/filtering, approve, edit-resets-draft,
+  regenerate versioning, ownership isolation, invalid status rejection
+
+**Full unit suite:** 199 passed
+
+---
+
+## New Files Created in Phase 6
+
+```
+backend/
+├── app/
+│   ├── models/
+│   │   └── document.py                 # GeneratedDocument model (NEW)
+│   ├── schemas/
+│   │   └── document.py                 # Document API schemas (NEW)
+│   ├── services/
+│   │   ├── document_storage.py         # Local/S3 artifact storage (NEW)
+│   │   ├── ats_service.py              # ATS analysis (NEW)
+│   │   ├── resume_service.py           # Resume tailoring (NEW)
+│   │   ├── cover_letter_service.py     # Cover letter generation (NEW)
+│   │   └── document_service.py         # Orchestration + review (NEW)
+│   ├── api/v1/
+│   │   └── documents.py                # /documents endpoints (NEW)
+│   └── tasks/
+│       └── documents.py                # Background generation (NEW)
+├── alembic/versions/
+│   └── b3f8c2d9e1a4_add_generated_documents.py  # Migration (NEW)
+tests/unit/
+└── test_document_services.py           # 20 tests (NEW)
+```
+
+---
+
+## Requirements Added (Phase 0-6)
+
+```txt
+slowapi==0.1.10          # Rate limiting
+structlog==24.1.0        # Structured logging
+prometheus-client==0.20.0 # Prometheus metrics
+pgvector==0.5.0          # Vector columns
+aiosqlite==0.22.1        # SQLite async for tests
+email-validator==2.3.0   # Pydantic email validation
+playwright==1.63.0       # Browser automation
+httpx==0.27.2            # HTTP client for Apify/OpenAI/Cohere
+celery==5.6.3            # Task queue
+```
+
+Optional (S3 artifact storage):
+```txt
+boto3                    # S3-compatible document storage
+```
+
+---
+
+## Phase 7: Application Workflow - COMPLETED ✅
+
+### 7.1 Extended ApplicationStatus + Audit Log ✅
+**File:** `backend/app/models/job.py`
+- `ApplicationStatus` extended with: `approved_at`, `applied_at`, `rejected_at`, `idempotency_key` (unique), `last_error`, `notes`, `status` index
+- Unique constraint `uq_application_user_job` on `(user_id, job_posting_id)`
+- New `ApplicationEvent` model — immutable append-only audit log:
+  - `application_id`, `from_status`, `to_status`, `actor`, `reason`, `idempotency_key`, `event_meta`
+- Relationships: `ApplicationStatus.events`
+
+**Migration:** `backend/alembic/versions/c7d4e1a9f2b8_add_application_workflow.py`
+- Chain: `c7d4e1a9f2b8 → b3f8c2d9e1a4 → 9a1c4d7e2f5b → 8f7e2a1b9c3d → 3cebe9a2cfbf`
+
+### 7.2 Guarded State Machine ✅
+**File:** `backend/app/services/application_service.py`
+
+**States:** Discovered → Matched → Approved → Applied; terminal Rejected
+
+**Transition table:**
+```
+Discovered → {Matched, Rejected}
+Matched    → {Approved, Rejected}
+Approved   → {Applied, Rejected}
+Applied    → {Rejected}
+Rejected   → {}  (terminal)
+```
+
+**Guards:**
+- `Approved` requires at least one **approved resume document** for (user, job)
+- `Applied` requires current status `Approved`, an approved resume still present,
+  and an **idempotency key**
+
+**Functions:** `create_application`, `get_or_create_application`,
+`transition_application`, `record_event`, `list_applications`, `list_events`,
+`record_submission_failure`, `is_valid_transition`
+
+### 7.3 Idempotency + Retry ✅
+- Submission requires `idempotency_key`; replaying the same key targeting the
+  same status is a **no-op** (no duplicate event, state unchanged)
+- `record_submission_failure()` records `last_error` + an audit event without
+  changing state, so retries are safe
+
+### 7.4 Human Approval Gate + Notifications ✅
+**File:** `backend/app/services/notification_service.py`
+- Pluggable notifier: `log` (default) or `webhook` (`NOTIFICATION_BACKEND`,
+  `NOTIFICATION_WEBHOOK_URL` for Slack/Teams)
+- `notify_pending_approval`, `notify_submitted`, `notify_rejected`
+- Failures swallowed — a notification outage never blocks the workflow
+- Wired into `transition_application` for Matched / Applied / Rejected
+
+### 7.5 Application API ✅
+**File:** `backend/app/api/v1/applications.py`
+- `POST /api/v1/applications` — create (Discovered)
+- `GET /api/v1/applications` — list (filter: status)
+- `GET /api/v1/applications/{id}` — fetch one
+- `GET /api/v1/applications/{id}/events` — audit-log history
+- `POST /api/v1/applications/{id}/transition` — guarded transition
+
+**Error mapping:** 404 not found, 409 invalid transition/exists, 422 guard failed
+
+**Schemas:** `backend/app/schemas/application.py`
+
+### 7.6 Tests ✅
+**File:** `tests/unit/test_application_service.py` - 15 tests (all pass)
+- Transition table
+- Creation + duplicate rejection + get-or-create idempotency
+- Full happy path (Discovered→Matched→Approved→Applied)
+- Guards: invalid transition, approve needs resume, apply needs idempotency key,
+  apply needs resume still present
+- Idempotent submission replay (no duplicate event)
+- Reject terminal state, list/filter, ownership isolation, submission failure audit
+
+**Full unit suite:** 214 passed
+
+---
+
+## New Files Created in Phase 7
+
+```
+backend/
+├── app/
+│   ├── models/
+│   │   └── job.py                      # Extended ApplicationStatus + ApplicationEvent
+│   ├── schemas/
+│   │   └── application.py              # Workflow API schemas (NEW)
+│   ├── services/
+│   │   ├── application_service.py      # State machine + audit log (NEW)
+│   │   └── notification_service.py     # Approval/submission notifications (NEW)
+│   └── api/v1/
+│       └── applications.py             # /applications endpoints (NEW)
+├── alembic/versions/
+│   └── c7d4e1a9f2b8_add_application_workflow.py  # Migration (NEW)
+tests/unit/
+└── test_application_service.py         # 15 tests (NEW)
+```
+
+---
+
+## Requirements Added (Phase 0-7)
+
+```txt
+slowapi==0.1.10          # Rate limiting
+structlog==24.1.0        # Structured logging
+prometheus-client==0.20.0 # Prometheus metrics
+pgvector==0.5.0          # Vector columns
+aiosqlite==0.22.1        # SQLite async for tests
+email-validator==2.3.0   # Pydantic email validation
+playwright==1.63.0       # Browser automation
+httpx==0.27.2            # HTTP client (Apify/OpenAI/Cohere/webhooks)
+celery==5.6.3            # Task queue
+```
+
+Optional:
+```txt
+boto3                    # S3-compatible document storage
+```
+
+---
+
+## Phase 8: Browser Automation - COMPLETED ✅
+
+### 8.1 ATS Selector Configuration ✅
+**File:** `backend/app/agents/ats_config.py`
+- `ATSConfig` dataclass with ordered fallback selectors per field
+- Dedicated configs: **Greenhouse**, **Lever**, **Workday** + **generic** fallback
+- `resolve_ats(url)` matches by host; `host_of(url)` helper
+- Adding a new ATS = adding data, not code
+
+### 8.2 Application Bot ✅
+**File:** `backend/app/agents/application_bot.py`
+- `ApplicantData`, `SubmissionRequest`, `SubmissionResult` dataclasses
+- `ApplicationFormFiller` protocol (injectable for tests)
+- `PlaywrightFormFiller` — real implementation, lazy Playwright import
+  - Fills text fields via ordered selector fallbacks
+  - Uploads resume/cover letter files
+  - Captures full-page screenshot evidence
+  - **`dry_run` defaults to True** — never clicks submit unless told to
+  - Detects form-ready, submits via submit-button selectors
+
+### 8.3 Politeness Controls ✅
+**File:** `backend/app/agents/politeness.py`
+- `DomainRateLimiter` — async, per-host minimum interval (default 5s)
+- `is_allowed_by_robots(url)` — honours robots.txt disallow rules
+  - Fails *open* on network error, but disallow rules always enforced
+  - Cached per host root
+
+### 8.4 Orchestration Service ✅
+**File:** `backend/app/services/browser_automation_service.py`
+- `build_applicant_data()` — public KB profile → `ApplicantData`
+  - Materialises approved resume/cover-letter docs to local files for upload
+- `submit_application()` — full flow with guards:
+  - Rejected application → blocked
+  - Real submission requires **Approved** status + approved resume document
+  - robots.txt check + domain rate limit
+  - Dry-run default; success advances application to **Applied** (idempotent)
+  - Failure records `last_error` + audit event without state change
+  - **Idempotent replay**: retried task on already-Applied app is a no-op success
+
+### 8.5 Celery Tasks ✅
+**File:** `backend/app/tasks/applications.py`
+- `submit_application_task(user_id, application_id)` — real submission
+  (retry: 3x exponential backoff, max 30 min)
+- `dry_run_submission_task(...)` — safe pre-fill inspection
+
+### 8.6 Submission API ✅
+**Endpoint:** `POST /api/v1/applications/{id}/submit`
+- Body: `{ "dry_run": true }` (default true)
+- Returns `ApplicationSubmitResponse` (success, ats, fields_filled,
+  evidence_paths, error, application_status)
+- Error mapping: 404 not found, 422 blocked/guard-failed
+
+### 8.7 Human-Gated Safety ✅
+- **Dry-run by default** — pre-fills and captures evidence without submitting
+- Real submission gated on **Approved** application + approved resume
+- robots.txt + rate limiting before any navigation
+- Evidence screenshots retained for audit
+- Only public candidate data is used
+
+### 8.8 Tests ✅
+**File:** `tests/unit/test_browser_automation.py` - 12 tests (all pass, no browser)
+- ATS resolution + host parsing
+- Rate limiter interval enforcement
+- robots.txt disallow blocks submission
+- Applicant data materialisation from approved docs
+- Dry-run from Matched (status unchanged, filler invoked)
+- Real submit requires Approved; rejected blocked
+- Real success advances to Applied (+ audit event meta)
+- Real failure records error, state unchanged
+- Idempotent resubmit is a no-op (no duplicate event)
+- ATS + applicant data flow into the request
+
+**Full unit suite:** 226 passed
+
+---
+
+## New Files Created in Phase 8
+
+```
+backend/
+├── app/
+│   ├── agents/
+│   │   ├── ats_config.py               # ATS selector maps (NEW)
+│   │   ├── politeness.py               # Rate limiter + robots.txt (NEW)
+│   │   └── application_bot.py          # Playwright form filler (NEW)
+│   ├── services/
+│   │   └── browser_automation_service.py  # Orchestration + guards (NEW)
+│   ├── tasks/
+│   │   └── applications.py             # Submission Celery tasks (NEW)
+│   └── api/v1/
+│       └── applications.py             # + /submit endpoint
+tests/unit/
+└── test_browser_automation.py          # 12 tests (NEW)
+```
+
+---
+
+## Requirements Added (Phase 0-8)
+
+```txt
+slowapi==0.1.10          # Rate limiting
+structlog==24.1.0        # Structured logging
+prometheus-client==0.20.0 # Prometheus metrics
+pgvector==0.5.0          # Vector columns
+aiosqlite==0.22.1        # SQLite async for tests
+email-validator==2.3.0   # Pydantic email validation
+playwright==1.47.0       # Browser automation
+httpx==0.27.2            # HTTP client (Apify/OpenAI/Cohere/webhooks/robots)
+celery==5.4.0            # Task queue
+```
+
+Optional:
+```txt
+boto3                    # S3-compatible document storage
+```
+
+---
+
+## Phase 9: Dashboard (Frontend) - COMPLETED ✅
+
+### 9.1 Design System ✅
+**File:** `frontend/src/app/globals.css`
+- Tailwind v4 `@theme` tokens for the exact requested palette:
+  Primary `#2563EB` / hover `#1D4ED8`, Secondary `#64748B`,
+  Background `#F8FAFC`, Card `#FFFFFF`, Border `#E2E8F0`,
+  Text `#0F172A`, Muted `#64748B`, Success `#059669`,
+  Warning `#D97706`, Danger `#DC2626`.
+- Consumed via utilities (`bg-primary`, `text-muted`, `border-border`, …)
+
+### 9.2 API Client + Auth ✅
+**Files:** `frontend/src/lib/api.ts`, `types.ts`, `auth.tsx`
+- `apiFetch` wrapper: bearer token, typed errors, 401 auto-logout
+- Full typed clients: auth, jobs, evaluation, search, kb, documents, applications
+- `AuthProvider` / `useAuth` context (login, register, logout, refresh)
+
+### 9.3 App Shell ✅
+**Files:** `frontend/src/app/(app)/layout.tsx`, `components/Sidebar.tsx`, `TopBar.tsx`, `icons.tsx`
+- Protected route group; redirects unauthenticated users to `/login`
+- Sidebar nav + user footer, sticky top bar with agent status
+
+### 9.4 Pages ✅
+- **`/login`, `/register`** — auth flows with validation
+- **`/dashboard`** — stat cards (jobs, applications, applied, avg match),
+  recent discoveries, pipeline breakdown, top matches
+- **`/jobs`** — browse + hybrid/semantic search + on-demand fit evaluation
+  (score ring, priority/recommendation, matched/partial/missing skills,
+  gaps, technical match)
+- **`/profile`** — Candidate KB editor (identity, target roles, education,
+  work authorization) + advanced JSON for skills/claims/experience, with
+  server-side validate & versioned save
+- **`/documents`** — generate resume/cover letter per job, review/edit,
+  approve/reject/regenerate, ATS score + matched keywords
+- **`/applications`** — kanban pipeline across all stages, advance/reject,
+  **dry-run** and **real submit** with confirmation, failure surfacing
+
+### 9.5 Build & Verification ✅
+- `tsc --noEmit` → clean
+- `next build` (Next 16 / Turbopack) → **8 routes** compiled successfully:
+  `/`, `/login`, `/register`, `/dashboard`, `/jobs`, `/profile`,
+  `/documents`, `/applications`
+- `eslint src` → **0 errors**, 4 warnings (data-fetching effect rule,
+  documented & downgraded in `eslint.config.mjs`)
+
+### 9.6 Config ✅
+- `frontend/.env.local.example` — `NEXT_PUBLIC_API_URL`
+- `frontend/README.md` — setup, features, palette table, structure
+
+---
+
+## New/Changed Files in Phase 9
+
+```
+frontend/
+├── .env.local.example                      # API base URL (NEW)
+├── README.md                               # Rewritten (NEW)
+├── eslint.config.mjs                       # Rule override (MODIFIED)
+└── src/
+    ├── app/
+    │   ├── globals.css                     # Palette tokens (REWRITTEN)
+    │   ├── layout.tsx                      # AuthProvider root (REWRITTEN)
+    │   ├── page.tsx                        # Auth-based redirect (REWRITTEN)
+    │   ├── login/page.tsx                  # (NEW)
+    │   ├── register/page.tsx               # (NEW)
+    │   └── (app)/
+    │       ├── layout.tsx                  # Protected shell (NEW)
+    │       ├── dashboard/page.tsx          # (NEW)
+    │       ├── jobs/page.tsx               # (NEW)
+    │       ├── profile/page.tsx            # (NEW)
+    │       ├── documents/page.tsx          # (NEW)
+    │       └── applications/page.tsx       # (NEW)
+    ├── components/
+    │   ├── ui.tsx                          # Card/Button/Badge/... (NEW)
+    │   ├── Sidebar.tsx                     # (NEW)
+    │   ├── TopBar.tsx                      # (NEW)
+    │   └── icons.tsx                       # (NEW)
+    └── lib/
+        ├── api.ts                          # Typed API client (NEW)
+        ├── types.ts                        # API types (NEW)
+        └── auth.tsx                        # Auth context (NEW)
+```
+
+---
+
+## Next Steps: Phase 10 - Production Readiness
+
+### 10.1 Kubernetes Hardening
+- HPA, PodDisruptionBudgets, NetworkPolicies
+- Sealed/External Secrets for `SECRET_KEY`, DB, API keys
+- Frontend deployment + ingress
+
+### 10.2 Observability
+- Prometheus scrape config + Grafana dashboards
+- Loki log aggregation; OpenTelemetry tracing
+
+### 10.3 Reliability
+- Backups / restore runbook (RPO/RTO)
+- Load testing + capacity planning
+- Alerting rules
 
 ---
 

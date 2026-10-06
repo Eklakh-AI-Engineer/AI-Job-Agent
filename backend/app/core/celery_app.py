@@ -12,7 +12,9 @@ celery_app = Celery(
     include=[
         "app.tasks.dummy",
         "app.tasks.discovery",
+        "app.tasks.documents",
         "app.tasks.embeddings",
+        "app.tasks.applications",
         "app.tasks.maintenance",
     ],
 )

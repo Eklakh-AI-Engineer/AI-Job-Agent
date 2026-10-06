@@ -22,9 +22,36 @@ from app.schemas.candidate_kb import (
     CandidateKBVersionList,
     CandidateKBVersionSummary,
 )
+from app.schemas.document import (
+    ATSAnalysisResponse,
+    DocumentContentUpdate,
+    DocumentGenerateRequest,
+    DocumentList,
+    DocumentRead,
+    DocumentStatusUpdate,
+)
+from app.schemas.application import (
+    ApplicationCreate,
+    ApplicationEventList,
+    ApplicationEventRead,
+    ApplicationList,
+    ApplicationRead,
+    ApplicationSubmitRequest,
+    ApplicationSubmitResponse,
+    ApplicationTransitionRequest,
+)
 
 __all__ = [
+    "ATSAnalysisResponse",
+    "ApplicationCreate",
+    "ApplicationEventList",
+    "ApplicationEventRead",
+    "ApplicationList",
+    "ApplicationRead",
     "ApplicationStatusRead",
+    "ApplicationSubmitRequest",
+    "ApplicationSubmitResponse",
+    "ApplicationTransitionRequest",
     "CandidateKBDeleteResponse",
     "CandidateKBResponse",
     "CandidateKBSaveRequest",
@@ -32,6 +59,11 @@ __all__ = [
     "CandidateKBValidateResponse",
     "CandidateKBVersionList",
     "CandidateKBVersionSummary",
+    "DocumentContentUpdate",
+    "DocumentGenerateRequest",
+    "DocumentList",
+    "DocumentRead",
+    "DocumentStatusUpdate",
     "JobDiscoveryCreate",
     "JobDiscoveryList",
     "JobDiscoveryRead",

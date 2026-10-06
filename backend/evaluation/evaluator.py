@@ -600,13 +600,16 @@ def evaluate_candidate_against_job(
     )
     evidence_score = (verified_evidence / total_evidence * 100) if total_evidence > 0 else 30
     
-    # Weighted fit score
+    # Weighted baseline score; the hybrid ranker later adds semantic similarity.
+    experience_component = _basic_experience_score(job_requirements, candidate_kb)
+    preference_component = _basic_preference_score(job_requirements, candidate_kb)
     fit_score = (
         skill_score * 0.40 +
         eligibility_score * 0.20 +
         role_score * 0.15 +
         evidence_score * 0.10 +
-        50 * 0.15  # Base score for preferences/experience (placeholder)
+        experience_component * 0.075 +
+        preference_component * 0.075
     )
     
     fit_score = round(max(0, min(100, fit_score)), 1)

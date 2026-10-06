@@ -32,7 +32,7 @@ These are real repository components, but their production readiness still depen
 
 - future embedding-model migration (requires full vector regeneration + compatibility validation)
 - calibrated candidate-job ranking
-- 50-100 case golden evaluation benchmark
+- 50-query provisional ranking benchmark + human-verified golden benchmark promotion
 - professional PDF/DOCX document rendering
 - deterministic mock ATS
 - full product E2E

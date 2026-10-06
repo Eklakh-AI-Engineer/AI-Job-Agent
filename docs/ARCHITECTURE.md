@@ -38,7 +38,7 @@ Job Sources
 1. The application path now uses `JobPosting` directly for evaluation and documents. The legacy `backend/jobs` model remains only for compatibility with older unit fixtures and is outside the application path.
 2. Listing discovery can persist a placeholder description; complete detail-page JD extraction is P1.1.
 3. Deterministic evaluation exists, but calibrated candidate-job ranking is still pending.
-4. Embedding provider/model/dimension compatibility needs a locked v1 contract.
+4. The v1 embedding contract is locked to OpenAI `text-embedding-3-small` / `1536` dimensions; incompatible configured models fail at startup and incompatible payloads fail before persistence.
 5. Current document rendering is text-based; professional PDF/DOCX artifacts remain pending.
 6. Browser automation needs deterministic mock-ATS and controlled real-ATS validation.
 7. The current E2E smoke test is an API health check, not the full product path.

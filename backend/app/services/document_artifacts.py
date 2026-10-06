@@ -13,6 +13,7 @@ import re
 from typing import Dict
 
 from docx import Document
+from docx.shared import Inches, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -77,14 +78,14 @@ def _render_pdf(content: str) -> bytes:
 def _render_docx(content: str) -> bytes:
     doc = Document()
     section = doc.sections[0]
-    section.top_margin = 0.55 * inch
-    section.bottom_margin = 0.55 * inch
-    section.left_margin = 0.65 * inch
-    section.right_margin = 0.65 * inch
+    section.top_margin = Inches(0.55)
+    section.bottom_margin = Inches(0.55)
+    section.left_margin = Inches(0.65)
+    section.right_margin = Inches(0.65)
 
     normal = doc.styles["Normal"]
     normal.font.name = "Arial"
-    normal.font.size = __import__("docx").shared.Pt(10)
+    normal.font.size = Pt(10)
 
     headings = {"SUMMARY", "SKILLS", "EXPERIENCE", "PROJECTS", "EDUCATION"}
     first_nonempty = True
@@ -96,12 +97,12 @@ def _render_docx(content: str) -> bytes:
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             run = p.add_run(line.strip())
             run.bold = True
-            run.font.size = __import__("docx").shared.Pt(16)
+            run.font.size = Pt(16)
             first_nonempty = False
         elif line.strip().upper() in headings:
             run = p.add_run(line.strip())
             run.bold = True
-            run.font.size = __import__("docx").shared.Pt(11)
+            run.font.size = Pt(11)
         else:
             p.add_run(line.strip())
 

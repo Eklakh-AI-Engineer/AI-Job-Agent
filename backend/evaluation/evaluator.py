@@ -389,6 +389,36 @@ def evaluate_role_match(
 
 
 # ---------------------------------------------------------------------------
+def _basic_experience_score(requirements: JobRequirements, kb: CandidateKB) -> float:
+    """Deterministic experience score from verified work history."""
+    if not requirements.experience_requirements:
+        return 50.0
+    match = re.search(r"(\d+(?:\.\d+)?)\s*\+?\s*(?:years?|yrs?)", requirements.experience_requirements.lower())
+    if not match:
+        return 50.0
+    required = float(match.group(1))
+    actual = sum(e.duration_months or 0 for e in kb.experience.work_experience if e.verified) / 12.0
+    if actual >= required:
+        return 100.0
+    if actual >= required * 0.75:
+        return 75.0
+    if actual >= required * 0.5:
+        return 50.0
+    return 0.0
+
+
+def _basic_preference_score(requirements: JobRequirements, kb: CandidateKB) -> float:
+    """Deterministic preference score from explicit work-mode/location preferences."""
+    parts = []
+    prefs = kb.preferences
+    if prefs.preferred_work_modes and requirements.work_mode:
+        parts.append(100.0 if any(requirements.work_mode.lower() == x.lower() for x in prefs.preferred_work_modes) else 0.0)
+    if prefs.preferred_locations and requirements.location_requirements:
+        location = requirements.location_requirements.lower()
+        parts.append(100.0 if any(x.lower() in location for x in prefs.preferred_locations) else 50.0)
+    return sum(parts) / len(parts) if parts else 50.0
+
+
 # Fit Score Calculation
 # ---------------------------------------------------------------------------
 
@@ -458,7 +488,7 @@ def calculate_fit_score(
         eligibility_score * 0.20 +
         role_score * 0.15 +
         evidence_score * 0.10 +
-        50 * 0.15  # Base score for preferences/experience (placeholder)
+        _basic_experience_score(job_requirements, kb) * 0.075 +\n        _basic_preference_score(job_requirements, kb) * 0.075
     )
     
     fit_score = round(max(0, min(100, fit_score)), 1)
@@ -653,9 +683,9 @@ def evaluate_candidate_against_job(
         recommendation=recommendation,
         role_match=role_match,
         technical_match=round(skill_score, 1),
-        project_match=50.0,  # Placeholder - would need project evaluation
-        experience_match=50.0,  # Placeholder - would need experience evaluation
-        preference_match=50.0,  # Placeholder - would need preference evaluation
+        project_match=round(skill_score, 1)
+        experience_match=round(_basic_experience_score(job_requirements, candidate_kb), 1)
+        preference_match=round(_basic_preference_score(job_requirements, candidate_kb), 1)
         evidence_quality=round(evidence_score, 1),
         matched_skills=matched_skills,
         partial_skills=partial_skills,

@@ -45,3 +45,8 @@ Recommended provider coverage:
 Real ATS pages change frequently. Record the exact URL and UTC timestamp with
 each validation result. A live page inspection is not itself proof that our
 automation succeeded; the executable validator is the source of truth.
+
+
+## CI evidence
+
+The repository includes `.github/workflows/real-ats-validation.yml`, which runs the validator against current public Lever application pages with disposable data and `dry_run=True`. The workflow is non-submitting by construction.

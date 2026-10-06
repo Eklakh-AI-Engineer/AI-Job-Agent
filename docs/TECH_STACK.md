@@ -9,7 +9,7 @@
 | Vector search | pgvector |
 | Background work | Redis / Celery |
 | Retrieval | lexical, dense and hybrid components |
-| Embeddings | provider abstraction |
+| Embeddings | OpenAI `text-embedding-3-small` (v1, 1536d) behind provider abstraction |
 | Browser automation | Playwright |
 | Testing | pytest + Node test runner |
 | Frontend | Next.js 16 / React 19 / TypeScript |
@@ -24,13 +24,13 @@
 - Terraform configuration
 - monitoring stack
 - external ATS automation
-- multiple embedding provider/model options
+- provider abstraction retained for future migrations; v1 runtime contract is 1536 dimensions
 
 These are real repository components, but their production readiness still depends on the validation work in PENDING_IMPLEMENTATION_PLAN.md.
 
 ## Planned validation / maturity
 
-- locked v1 embedding model and vector dimension
+- future embedding-model migration (requires full vector regeneration + compatibility validation)
 - calibrated candidate-job ranking
 - 50-100 case golden evaluation benchmark
 - professional PDF/DOCX document rendering

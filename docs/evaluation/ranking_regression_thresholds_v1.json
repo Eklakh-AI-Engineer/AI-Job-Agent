@@ -1,0 +1,10 @@
+{
+  "benchmark_version": "50-query-v1",
+  "minimums": {
+    "precision@5": 0.85,
+    "recall@5": 0.85,
+    "ndcg@5": 0.9,
+    "mrr": 0.9
+  },
+  "policy": "CI fails when any frozen benchmark metric falls below its minimum."
+}

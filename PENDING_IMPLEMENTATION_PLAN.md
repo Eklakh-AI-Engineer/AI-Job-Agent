@@ -172,12 +172,12 @@ Remaining structured-field normalization is intentionally handled by P1.2 so exp
 
 ## P1.2 Normalize and validate extracted requirements
 
-- [ ] Normalize skill aliases into canonical skills.
-- [ ] Preserve original wording for evidence.
-- [ ] Distinguish explicit requirements from inferred/uncertain information.
-- [ ] Validate dates, experience ranges and education fields.
-- [ ] Add extraction confidence/status metadata where appropriate.
-- [ ] Add regression fixtures for malformed and incomplete JDs.
+- [x] Normalize skill aliases into canonical skills.
+- [x] Preserve original wording for evidence.
+- [x] Distinguish explicit requirements from inferred/uncertain information.
+- [x] Validate dates, experience ranges and education fields.
+- [x] Add extraction confidence/status metadata where appropriate.
+- [x] Add regression fixtures for malformed and incomplete JDs.
 
 **Acceptance:** evaluator/search receives structured, provenance-aware requirements rather than raw scraper output.
 
@@ -225,12 +225,10 @@ A 50-query × 5-candidate **provisional** benchmark now exists at `docs/evaluati
 
 Target:
 
-- [ ] 50–100 representative jobs/queries.
-- [ ] Gold relevance labels.
-- [ ] Gold matched skills.
-- [ ] Gold missing skills.
-- [ ] Gold eligibility outcomes.
-- [ ] Gold preferred-job ordering where possible.
+- [x] 50-query × 5-candidate benchmark fixture (250 labelled pairs) with provenance and difficult-negative metadata.
+- [ ] Human-gold relevance labels on real persisted/discovered jobs.
+- [ ] Human-gold matched/missing skills.
+- [ ] Human-gold eligibility outcomes.
 - [ ] Human rationale/evidence references.
 
 Include difficult cases:
@@ -261,12 +259,13 @@ Include difficult cases:
 
 ## P3.3 Add regression evaluation
 
-- [ ] Create a reproducible evaluation command.
-- [ ] Store dataset version.
-- [ ] Store model/config version.
-- [ ] Store metric output.
-- [ ] Fail CI when critical metrics regress beyond defined thresholds.
-- [ ] Publish evaluation results in `docs/evaluation/`.
+- [x] Create a reproducible evaluation command.
+- [x] Store dataset version and SHA-256.
+- [x] Store ranking/config version.
+- [x] Store metric output.
+- [x] Fail CI when frozen benchmark metrics regress beyond defined thresholds.
+- [x] Publish regression configuration and evaluation documentation in `docs/evaluation/`.
+- [ ] Publish production-quality metrics from an independently human-gold corpus.
 
 **Acceptance:** matching improvements can be measured instead of judged only by screenshots or manual inspection.
 

@@ -31,7 +31,7 @@ Job Sources
 - resume/cover-letter generation, review state and ATS analysis
 - application state, audit events and Playwright automation
 - Next.js frontend with dashboard, opportunities, copilot, documents, applications, activity and profile
-- Prometheus metrics and deployment scaffolding
+- Prometheus metrics, production HTTP hardening and CI release gates
 
 ## Known architectural gaps
 
@@ -39,9 +39,9 @@ Job Sources
 2. Discovery now fetches each detail page before persistence; failed extraction is skipped and reported rather than persisted as a placeholder. P1.2 still owns structured-field normalization/provenance.
 3. Candidate-job ranking is now a versioned hybrid scorer combining deterministic evidence signals and semantic similarity; golden-set calibration remains pending.
 4. The v1 embedding contract is locked to OpenAI `text-embedding-3-small` / `1536` dimensions; incompatible configured models fail at startup and incompatible payloads fail before persistence.
-5. Current document rendering is text-based; professional PDF/DOCX artifacts remain pending.
-6. Browser automation needs deterministic mock-ATS and controlled real-ATS validation.
-7. The current E2E smoke test is an API health check, not the full product path.
-8. CI, observability and production deployment still require hardening.
+5. Document rendering now produces auditable PDF/DOCX artifacts with integrity metadata.
+6. Browser automation has deterministic mock-ATS coverage and a separate live dry-run validation gate.
+7. A service-level true-pipeline E2E exists; browser-level frontend QA and live ATS evidence remain separate release gates.
+8. CI now gates backend/frontend correctness; observability and deployment hardening are documented with remaining environment-level controls.
 
 See [PENDING_IMPLEMENTATION_PLAN.md](../PENDING_IMPLEMENTATION_PLAN.md).

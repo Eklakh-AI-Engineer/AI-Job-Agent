@@ -18,6 +18,8 @@ from app.core.embeddings import (
     EmbeddingResult,
     get_embedding_provider,
     compute_text_hash,
+    validate_embedding_result,
+    EMBEDDING_VECTOR_DIMENSION,
 )
 from app.core.metrics import embedding_generation_total, embedding_generation_duration_seconds
 from app.models.job import JobPosting
@@ -100,6 +102,7 @@ async def generate_job_embedding(
     start_time = asyncio.get_event_loop().time()
     try:
         result = await provider.embed([text])
+        validate_embedding_result(result)
         latency = (asyncio.get_event_loop().time() - start_time) * 1000
         
         embedding_generation_total.labels(
@@ -148,6 +151,7 @@ async def generate_embeddings_batch(
         start_time = asyncio.get_event_loop().time()
         try:
             result = await provider.embed(texts)
+            validate_embedding_result(result)
             latency = (asyncio.get_event_loop().time() - start_time) * 1000
             
             embedding_generation_total.labels(
@@ -187,7 +191,16 @@ async def update_job_embedding(
         
     Returns:
         True if updated, False if job not found
+
+    Raises:
+        ValueError: If the vector does not satisfy the v1 1536-dimension contract.
     """
+    if len(embedding) != EMBEDDING_VECTOR_DIMENSION:
+        raise ValueError(
+            f"Embedding dimension mismatch: got {len(embedding)}, "
+            f"expected {EMBEDDING_VECTOR_DIMENSION}."
+        )
+
     result = await db.execute(
         update(JobPosting)
         .where(JobPosting.id == job_id)

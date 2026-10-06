@@ -36,7 +36,7 @@ Job Sources
 ## Known architectural gaps
 
 1. The application path now uses `JobPosting` directly for evaluation and documents. The legacy `backend/jobs` model remains only for compatibility with older unit fixtures and is outside the application path.
-2. Listing discovery can persist a placeholder description; complete detail-page JD extraction is P1.1.
+2. Discovery now fetches each detail page before persistence; failed extraction is skipped and reported rather than persisted as a placeholder. P1.2 still owns structured-field normalization/provenance.
 3. Deterministic evaluation exists, but calibrated candidate-job ranking is still pending.
 4. The v1 embedding contract is locked to OpenAI `text-embedding-3-small` / `1536` dimensions; incompatible configured models fail at startup and incompatible payloads fail before persistence.
 5. Current document rendering is text-based; professional PDF/DOCX artifacts remain pending.

@@ -10,6 +10,7 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://127.0.0.1:3000",
+    channel: "chrome",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

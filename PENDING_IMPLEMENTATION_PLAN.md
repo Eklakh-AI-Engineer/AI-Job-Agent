@@ -189,55 +189,31 @@ Semantic search exists, but search similarity alone is not the same as candidate
 
 ## P2.1 Build the ranking pipeline
 
-Implement a dedicated matching service:
+Implemented as `backend/evaluation/hybrid_ranker.py`.
 
-```text
-Candidate KB
-    +
-Structured Job
-    ↓
-Hard eligibility filters
-    ↓
-Lexical skill match
-    +
-Semantic candidate/job similarity
-    +
-Role match
-    +
-Experience/education
-    +
-Preferences
-    ↓
-Calibrated ranking score
-    ↓
-Match explanation
-```
+- [x] Explicit feature set: semantic, technical, role, experience, education, preference, evidence.
+- [x] Versioned deterministic weights in `RANKING_WEIGHTS`.
+- [x] Combine lexical/evidence-based evaluation with candidate↔job semantic similarity.
+- [x] Apply hard eligibility rejection before final ranking.
+- [x] Produce stable 0–100 ranking output.
+- [x] Return explainable component scores and ranking version.
+- [x] Preserve matched, partial and missing skill breakdowns from the deterministic evaluator.
+- [x] Integrate the ranker into the evaluation service/API.
 
-- [ ] Define explicit feature set.
-- [ ] Define deterministic weights/configuration.
-- [ ] Combine lexical + semantic + structured signals.
-- [ ] Apply hard-reject rules before ranking.
-- [ ] Produce stable ranking output.
-- [ ] Return explainable sub-scores.
-- [ ] Return matched, partial, missing and uncertain requirements.
-- [ ] Store enough information to reproduce a ranking.
-
-**Acceptance:** given the same candidate KB, job and model/config version, ranking is deterministic and explainable.
+**Acceptance:** given the same candidate KB, job, embedding model and ranking configuration, ranking is deterministic and explainable.
 
 ---
 
 ## P2.2 Calibrate current evaluation scoring
 
-The existing evaluator contains a placeholder preference/experience component.
+- [x] Replace placeholder preference/experience scoring with measurable features.
+- [x] Calculate experience fit from verified work-history duration against explicit years requirements.
+- [x] Calculate preference fit from explicit work-mode/location preferences.
+- [x] Document and version every hybrid-ranking weight.
+- [x] Add regression tests for ranking primitives.
+- [x] Keep hard eligibility rejection separate from soft ranking.
 
-- [ ] Replace placeholder scoring with measurable features.
-- [ ] Define how experience relevance is calculated.
-- [ ] Define how preference fit is calculated.
-- [ ] Document every weight.
-- [ ] Test edge cases.
-- [ ] Version the scoring configuration.
-
-**Acceptance:** no production score component is an unexplained constant.
+**Acceptance:** no production ranking component is an unexplained constant.
 
 ---
 

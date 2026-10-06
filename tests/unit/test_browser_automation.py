@@ -129,6 +129,10 @@ async def _add_approved_resume(db_session, user_id, job_id, storage_root="data/d
     pdf_key = build_document_key(user_id, job_id, "resume", 1, "pdf")
     await get_document_storage().put_bytes(pdf_key, artifacts["pdf"]["bytes"], artifacts["pdf"]["content_type"])
     artifacts["pdf"]["storage_key"] = pdf_key
+    artifact_meta = {
+        fmt: {key: value for key, value in artifact.items() if key != "bytes"}
+        for fmt, artifact in artifacts.items()
+    }
     doc = GeneratedDocument(
         user_id=user_id,
         job_posting_id=job_id,
@@ -136,7 +140,7 @@ async def _add_approved_resume(db_session, user_id, job_id, storage_root="data/d
         status="approved",
         version=1,
         content="APPROVED RESUME BODY",
-        meta={"artifacts": artifacts},
+        meta={"artifacts": artifact_meta},
     )
     db_session.add(doc)
     await db_session.commit()

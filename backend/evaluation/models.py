@@ -256,7 +256,7 @@ class SkillMatch(BaseModel):
             "References to candidate claims/skills that support this classification. "
             "Empty for NO_VERIFIED_EVIDENCE, NOT_APPLICABLE, or UNCERTAIN."
         ),
-    )
+    ),
     rationale: Optional[str] = Field(
         None,
         description=(

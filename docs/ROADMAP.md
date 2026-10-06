@@ -2,60 +2,48 @@
 
 ## Current milestone
 
-The repository currently documents **Phase 3 — Backend Foundation** as the completed implementation milestone.
+The repository has completed a broad implementation expansion from the original backend foundation. The current task tracker is [PENDING_IMPLEMENTATION_PLAN.md](../PENDING_IMPLEMENTATION_PLAN.md).
 
-## Implemented foundation
+## Implemented milestones
 
-The current baseline includes:
+- 🟢 FastAPI, auth, persistence, migrations and tests
+- 🟢 PostgreSQL + pgvector and Redis + Celery
+- 🟢 Candidate KB and deterministic candidate-job evaluation
+- 🟢 Greenhouse, Lever, Workday and Apify discovery infrastructure
+- 🟢 embeddings and semantic/hybrid retrieval
+- 🟢 document generation workflow and ATS analysis
+- 🟢 application lifecycle, audit and human-gated Playwright automation
+- 🟢 Next.js agent-oriented frontend
+- 🟢 Prometheus metrics, CodeQL and container publishing
+- 🟢 Kubernetes/Terraform deployment scaffolding
 
-- versioned FastAPI routes;
-- authentication;
-- user profile access;
-- job posting APIs;
-- service layer;
-- PostgreSQL + pgvector;
-- Redis;
-- Alembic migrations;
-- local Docker Compose workflow;
-- fast and PostgreSQL integration test paths.
+## Critical remaining path
 
-## Future work
+```text
+Repository correctness
+  -> Real JD extraction
+  -> Canonical JobPosting pipeline
+  -> Candidate-job ranking
+  -> Golden evaluation set + metrics
+  -> Professional PDF/DOCX artifacts
+  -> Controlled ATS E2E
+  -> Full product E2E
+  -> CI release gate
+  -> Production hardening
+```
 
-### Phase 4 — Job intelligence
+## Remaining phases
 
-- source adapters;
-- normalization and deduplication;
-- JD parsing;
-- company research;
-- matching/scoring.
+- 🔴 P0 Repository correctness
+- 🔴 P1 Real job intelligence
+- 🔴 P2 Candidate-job ranking
+- 🔴 P3 Evaluation
+- 🔴 P4 Professional documents
+- 🔴 P5 Application validation
+- 🔴 P6 Full E2E
+- 🟠 P7-P10 CI, frontend integration, production hardening and security
+- 🟡 P11 Analytics / learning loop
+- 🟠 P12 Portfolio-grade engineering evidence
+- 🏁 P13 v1 release gate
 
-### Phase 5 — Candidate material intelligence
-
-- resume tailoring;
-- cover-letter generation;
-- ATS validation;
-- evidence/claim constraints.
-
-### Phase 6 — Application assistance
-
-- browser automation;
-- application form mapping;
-- explicit human approval;
-- submission audit trail.
-
-### Phase 7 — Tracking and analytics
-
-- application lifecycle tracking;
-- interview/outcome tracking;
-- recommendation feedback;
-- career analytics.
-
-### Phase 8 — Production hardening
-
-- operational observability;
-- deployment automation;
-- reliability controls;
-- security hardening;
-- scale testing.
-
-These phases are **roadmap targets**, not claims of completion.
+The older Revised implementation plan remains as a historical milestone record and is not the current pending-work list.

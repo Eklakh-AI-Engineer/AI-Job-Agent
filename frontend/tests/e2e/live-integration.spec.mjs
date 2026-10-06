@@ -94,7 +94,7 @@ test("live frontend critical path uses the running backend", async ({ page, requ
   );
   await page.goto("/documents");
   expect((await documentsResponse).status()).toBe(200);
-  await expect(page.getByText("Document Workspace")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Document Workspace" })).toBeVisible();
 
   const applicationsResponse = page.waitForResponse(
     (response) =>
@@ -102,10 +102,10 @@ test("live frontend critical path uses the running backend", async ({ page, requ
   );
   await page.goto("/applications");
   expect((await applicationsResponse).status()).toBe(200);
-  await expect(page.getByText("Applications")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Applications" })).toBeVisible();
 
   await page.goto("/profile");
-  await expect(page.getByText("Candidate Profile")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Candidate Profile" })).toBeVisible();
 
   // Prove the frontend can still reach the API after route transitions.
   const browserJob = await page.evaluate(async ({ api, id }) => {

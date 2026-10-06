@@ -1,0 +1,36 @@
+name: Frontend Live Integration QA
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**", "backend/**"]
+  pull_request:
+    branches: [main]
+    paths: ["frontend/**", "backend/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  live-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.FRONTEND_QA_API_URL }}
+        run: npm run build
+      - name: Run configured live browser QA
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ vars.FRONTEND_QA_BASE_URL }}
+          PLAYWRIGHT_API_URL: ${{ vars.FRONTEND_QA_API_URL }}
+        run: npm exec --yes --package=@playwright/test@1.63.0 -- playwright test

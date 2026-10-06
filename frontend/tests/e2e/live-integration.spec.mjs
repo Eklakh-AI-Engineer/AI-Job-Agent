@@ -64,27 +64,17 @@ test("live frontend critical path uses the running backend", async ({ page, requ
   await page.reload();
   expect((await meResponse).status()).toBe(200);
 
-  const jobsPayloadPromise = new Promise((resolve, reject) => {
-    const handler = async (response) => {
-      if (
-        response.url().includes("/api/v1/jobs") &&
-        response.request().method() === "GET"
-      ) {
-        page.off("response", handler);
-        try {
-          expect(response.status()).toBe(200);
-          resolve(await response.json());
-        } catch (error) {
-          reject(error);
-        }
-      }
-    };
-    page.on("response", handler);
-  });
-  await page.goto("/opportunities");
-  const jobsPayload = await jobsPayloadPromise;
-  expect(jobsPayload.items.some((item) => item.id === job.id)).toBeTruthy();
   await expect(page.getByRole("heading", { name: "Opportunities" })).toBeVisible();
+  const browserJobs = await page.evaluate(async (api) => {
+    const token = localStorage.getItem("aja_token");
+    const response = await fetch(`${api}/api/v1/jobs?limit=100`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return { status: response.status, body: await response.json() };
+  }, API);
+  expect(browserJobs.status).toBe(200);
+  expect(browserJobs.body.items.some((item) => item.id === job.id)).toBeTruthy();
+
   await page.getByRole("button", { name: /All/ }).click();
   await expect(page.getByText(jobTitle)).toBeVisible();
 

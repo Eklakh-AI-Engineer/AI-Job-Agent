@@ -69,7 +69,12 @@ test("live frontend critical path uses the running backend", async ({ page, requ
       response.url().includes("/api/v1/jobs") && response.request().method() === "GET",
   );
   await page.goto("/opportunities");
-  expect((await jobsResponse).status()).toBe(200);
+  const jobsHttp = await jobsResponse;
+  expect(jobsHttp.status()).toBe(200);
+  const jobsPayload = await jobsHttp.json();
+  expect(jobsPayload.items.some((item) => item.id === job.id)).toBeTruthy();
+  await expect(page.getByText("Opportunities")).toBeVisible();
+  await page.getByRole("button", { name: /All/ }).click();
   await expect(page.getByText(jobTitle)).toBeVisible();
 
   const documentsResponse = page.waitForResponse(

@@ -491,4 +491,7 @@ class EvaluationResult(BaseModel):
             "May include restricted references for internal use. "
             "Must be filtered by disclosure level before any external export."
         ),
-    )
+    ),
+    ranking_version: Optional[str] = Field(None, description="Versioned candidate-job ranking configuration."),
+    semantic_similarity: Optional[float] = Field(None, ge=-1.0, le=1.0, description="Cosine similarity between candidate and job embeddings."),
+    ranking_components: dict[str, float] = Field(default_factory=dict, description="Auditable component scores used by the hybrid ranker.")

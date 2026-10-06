@@ -18,7 +18,7 @@ from app.services.candidate_kb_service import save_candidate_kb_from_dict
 from app.services.document_service import generate_cover_letter, generate_resume, update_document_status
 from app.services.job_service import create_job
 from app.services.browser_automation_service import submit_application
-from app.services.document_storage import LocalFilesystemStorage, set_document_storage
+from app.services.document_storage import LocalFilesystemStorage, get_document_storage, set_document_storage
 from app.agents.application_bot import SubmissionResult
 from backend.evaluation.candidate_loader import load_candidate_kb_from_dir
 from backend.evaluation.hybrid_ranker import rank_candidate_job
@@ -27,6 +27,7 @@ from backend.evaluation.hybrid_ranker import rank_candidate_job
 @pytest.mark.e2e
 @pytest.mark.asyncio
 async def test_true_application_pipeline(db_session, tmp_path):
+    old_storage = get_document_storage()
     set_document_storage(LocalFilesystemStorage(str(tmp_path / "documents")))
     kb = load_candidate_kb_from_dir("tests/fixtures/candidate")
     user_record = await create_user(
@@ -116,3 +117,4 @@ async def test_true_application_pipeline(db_session, tmp_path):
     assert outcome.result.success is True
     assert outcome.application_status == "Applied"
     assert captured["request"].applicant.resume_path.endswith(".pdf")
+    set_document_storage(old_storage)

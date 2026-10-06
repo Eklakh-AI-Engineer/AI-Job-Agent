@@ -94,9 +94,9 @@ Do not optimize deployment infrastructure before the core intelligence path has 
 
 ## P0.1 Remove generated repository noise
 
-- [ ] Remove `tree_output.txt` (~4 MB generated tree dump).
-- [ ] Confirm generated Celery/runtime artifacts are ignored.
-- [ ] Search for other generated caches, local runtime files and accidental artifacts.
+- [x] Remove `tree_output.txt` (~4 MB generated tree dump).
+- [x] Confirm generated Celery/runtime artifacts are ignored.
+- [x] Search repository tree for generated caches/local runtime artifacts; known runtime patterns are covered by `.gitignore`.
 - [ ] Keep source documentation and design artifacts only when they provide reproducible engineering value.
 
 **Acceptance:** repository contains source, tests, configuration and useful documentation—not generated local runtime output.
@@ -107,16 +107,16 @@ Do not optimize deployment infrastructure before the core intelligence path has 
 
 The root README currently describes an earlier backend-foundation milestone and understates the implementation now present in the repository.
 
-- [ ] Rewrite root README current-status section.
-- [ ] Clearly distinguish:
+- [x] Rewrite root README current-status section.
+- [x] Clearly distinguish:
   - implemented;
   - integrated;
   - validated;
   - planned.
-- [ ] Update architecture diagram to reflect the actual pipeline.
-- [ ] Update roadmap so completed phases are not duplicated as pending.
-- [ ] Link this file as the canonical pending-work tracker.
-- [ ] Preserve historical implementation plans as historical records rather than using them as current status.
+- [x] Update architecture diagram to reflect the actual implementation boundary.
+- [x] Update roadmap so completed implementation is separated from remaining validation work.
+- [x] Link this file as the canonical pending-work tracker.
+- [x] Preserve historical implementation plans as historical records rather than using them as current status.
 
 **Acceptance:** a reviewer reading only `README.md` can understand what works today and what remains without inspecting source code.
 

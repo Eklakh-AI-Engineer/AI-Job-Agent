@@ -35,7 +35,7 @@ Job Sources
 
 ## Known architectural gaps
 
-1. Evaluation still crosses a legacy job adapter; P0.3 tracks convergence on one canonical job representation.
+1. The application path now uses `JobPosting` directly for evaluation and documents. The legacy `backend/jobs` model remains only for compatibility with older unit fixtures and is outside the application path.
 2. Listing discovery can persist a placeholder description; complete detail-page JD extraction is P1.1.
 3. Deterministic evaluation exists, but calibrated candidate-job ranking is still pending.
 4. Embedding provider/model/dimension compatibility needs a locked v1 contract.

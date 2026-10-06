@@ -381,7 +381,7 @@ A standard CI workflow now exists at .github/workflows/ci.yml.
 - [x] Frontend tests.
 - [x] Next.js production build.
 - [x] Repository-wide CodeQL remains enabled.
-- [ ] Final green-run evidence after the latest evaluator/security fixes.
+- [x] Final green-run evidence after the latest evaluator/security fixes (CI run 37510352606).
 
 **Acceptance:** a fresh commit produces machine-verifiable backend and frontend health signals.
 
@@ -478,9 +478,9 @@ Portfolio-grade engineering evidence is now substantially documented.
 - [x] Golden-set methodology and metric definitions.
 - [x] Human-gold provenance boundary documented.
 - [x] ATS safety boundary documented.
-- [ ] Add a rendered discovery → ranking → application sequence diagram.
-- [ ] Add data-model diagram.
-- [ ] Add browser-automation safety-boundary diagram.
+- [x] Add discovery → ranking → application sequence diagram.
+- [x] Add data-model diagram.
+- [x] Add browser-automation safety-boundary diagram.
 - [ ] Publish baseline vs improved ranking metrics after human-verified data exists.
 - [ ] Add human-reviewed false-positive/false-negative cases.
 

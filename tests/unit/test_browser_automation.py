@@ -35,6 +35,8 @@ from app.services.browser_automation_service import (
     submit_application,
 )
 from app.services.candidate_kb_service import save_candidate_kb_from_dict
+from app.services.document_artifacts import build_artifacts
+from app.services.document_storage import LocalFilesystemStorage, build_document_key, get_document_storage, set_document_storage
 from app.services.job_service import create_job
 from app.services.user_service import create_user
 
@@ -115,7 +117,18 @@ async def ba_job(db_session):
     return job.id
 
 
-async def _add_approved_resume(db_session, user_id, job_id):
+async def _add_approved_resume(db_session, user_id, job_id, storage_root="data/documents"):
+    set_document_storage(LocalFilesystemStorage(storage_root))
+    artifacts = build_artifacts(
+        "APPROVED RESUME BODY",
+        doc_type="resume",
+        user_id=user_id,
+        job_id=job_id,
+        version=1,
+    )
+    pdf_key = build_document_key(user_id, job_id, "resume", 1, "pdf")
+    await get_document_storage().put_bytes(pdf_key, artifacts["pdf"]["bytes"], artifacts["pdf"]["content_type"])
+    artifacts["pdf"]["storage_key"] = pdf_key
     doc = GeneratedDocument(
         user_id=user_id,
         job_posting_id=job_id,
@@ -123,6 +136,7 @@ async def _add_approved_resume(db_session, user_id, job_id):
         status="approved",
         version=1,
         content="APPROVED RESUME BODY",
+        meta={"artifacts": artifacts},
     )
     db_session.add(doc)
     await db_session.commit()
@@ -210,7 +224,7 @@ async def test_build_applicant_data_materializes_docs(db_session, ba_user, ba_jo
     import os
 
     assert os.path.isfile(data.resume_path)
-    assert open(data.resume_path).read() == "APPROVED RESUME BODY"
+    assert open(data.resume_path, "rb").read(4) == b"%PDF"
 
 
 # ---------------------------------------------------------------------------

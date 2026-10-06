@@ -20,6 +20,7 @@ from slowapi.errors import RateLimitExceeded
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.database import get_db
+from app.core.embeddings import validate_embedding_configuration
 from app.core.logging import LoggingMiddleware, setup_logging
 from app.core.metrics import PrometheusMiddleware, metrics_endpoint
 
@@ -41,6 +42,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     # Startup: validate production config
     settings.validate_production_config()
+    validate_embedding_configuration()
     yield
     # Shutdown: cleanup if needed
 

@@ -135,8 +135,7 @@ async def generate_cover_letter(
     job = await _load_job(db, job_id)
     kb = await load_candidate_kb(db, user_id)
 
-    legacy_job = job_posting_to_legacy_job(job)
-    requirements = extract_requirements(legacy_job)
+    requirements = extract_requirements(job)
 
     letter = build_cover_letter(
         kb,

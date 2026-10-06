@@ -1,200 +1,127 @@
 # AI Job Agent
 
-> **A backend foundation for an AI-assisted career operating system.**
-
-AI Job Agent is an evolving platform for job discovery, candidate/job matching, application assistance, and career workflow automation. The repository currently focuses on the **backend foundation and API delivery layer**; the broader autonomous multi-agent vision remains roadmap work.
+> AI-assisted career operating system for job discovery, candidate-job intelligence, application documents, and human-gated application workflows.
 
 ## Current status
 
-**Current documented milestone: Phase 3 — Backend Foundation.**
+The repository is substantially beyond the original backend-foundation milestone. Project claims use four states: **Implemented**, **Integrated**, **Validated**, and **Planned**.
 
-| Area | Current status |
+| Capability | Status |
 |---|---|
-| FastAPI backend | Implemented |
-| Versioned API routing | Implemented |
-| Authentication | Implemented |
-| User profile endpoints | Implemented |
-| Job CRUD / ingestion foundation | Implemented |
-| PostgreSQL + pgvector integration | Implemented in stack |
-| Redis integration | Implemented in stack |
-| Alembic migrations | Implemented |
-| SQLite-backed fast tests | Implemented |
-| Real-Postgres integration tests | Implemented |
-| Autonomous job discovery | Roadmap |
-| Semantic matching agent | Roadmap / evolving |
-| Resume optimization agent | Roadmap |
-| Cover-letter generation | Roadmap |
-| Browser application automation | Roadmap |
-| Learning / career analytics | Roadmap |
-| Full production deployment | Not claimed |
+| FastAPI /api/v1 backend | 🟢 Implemented / integrated |
+| PostgreSQL + pgvector | 🟢 Implemented |
+| Redis + Celery | 🟢 Implemented / integrated |
+| Candidate Knowledge Base | 🟢 Implemented / integrated |
+| Greenhouse / Lever / Workday / Apify discovery | 🟢 Implemented |
+| Normalization / deduplication | 🟢 Implemented |
+| Complete JD extraction | 🔴 Pending |
+| Deterministic candidate-job evaluation | 🟢 Implemented |
+| Calibrated hybrid candidate-job ranking | 🔴 Pending |
+| Embeddings / semantic / hybrid search | 🟢 Implemented |
+| Resume / cover-letter workflow | 🟢 Implemented; PDF/DOCX pending |
+| ATS analysis | 🟢 Implemented |
+| Application lifecycle + audit | 🟢 Implemented |
+| Playwright ATS automation | 🟢 Implemented / unit-tested |
+| Controlled ATS E2E validation | 🔴 Pending |
+| Next.js frontend | 🟢 Implemented / integrated |
+| Full product E2E | 🔴 Pending |
+| Complete CI release gate | 🟠 Pending |
+| Prometheus metrics | 🟢 Implemented |
+| Grafana / tracing / production hardening | 🟠 Pending |
 
-The project is intentionally **not** represented as a completed 24/7 autonomous application agent.
-
----
-
-## What exists today
-
-The current backend exposes versioned API routes under `/api/v1` and includes:
-
-- account registration and login;
-- bearer-token authentication;
-- caller profile access;
-- job posting ingestion and listing;
-- database-backed persistence;
-- health checks;
-- service-layer separation;
-- migration support;
-- local Docker Compose development.
-
-Interactive FastAPI documentation is available at `/docs` when the local API is running.
-
-### API examples
-
-```text
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-GET  /api/v1/users/me
-GET  /api/v1/jobs
-POST /api/v1/jobs
-GET  /api/v1/jobs/{id}
-GET  /health
-```
-
-See the detailed contracts under [docs/10_API/](docs/10_API/).
-
----
+**Current source of truth for remaining work:** [PENDING_IMPLEMENTATION_PLAN.md](PENDING_IMPLEMENTATION_PLAN.md).
 
 ## Architecture
 
-The current implementation should be understood as:
-
 ```text
-Client
-  |
-  v
-FastAPI /api/v1
-  |
-  +--> Authentication / Authorization
-  |
-  +--> API Routers
-  |
-  +--> Service Layer
-  |
-  +--> Persistence
-          |
-          +--> PostgreSQL / pgvector
-          +--> Redis
-          +--> Alembic migrations
+Job Sources: Greenhouse / Lever / Workday / Apify
+                    |
+                    v
+         Discovery + normalization
+                    |
+                    v
+             JobPosting storage
+                    |
+          +---------+----------+
+          |                    |
+          v                    v
+   Requirements/eval     Embeddings/search
+          |                    |
+          +---------+----------+
+                    |
+                    v
+             Candidate KB
+               /       \
+              v         v
+       Documents     Applications
+       + ATS         + audit
+                    |
+                    v
+                 Next.js
 ```
 
-The larger target architecture adds discovery, parsing, matching, resume optimization, application assistance, tracking, and analytics around this foundation. Those components are documented as **future scope**, not current implementation.
+This describes the current implementation boundary, not a claim that every path is production-grade or end-to-end validated. Complete JD extraction, canonical job-pipeline cleanup, calibrated ranking, professional PDF/DOCX artifacts, controlled ATS E2E, and the full CI release gate remain pending.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
----
-
 ## Technology
 
-Current repository technology includes:
-
-- **Python**
-- **FastAPI**
-- **PostgreSQL + pgvector**
-- **Redis**
-- **SQLAlchemy**
-- **Alembic**
-- **Docker / Docker Compose**
-- **pytest**
-
-The repository also contains design documentation for future AI/automation components. Those planned technologies should not be interpreted as proof that every listed component is currently implemented.
+- Python, FastAPI, SQLAlchemy, PostgreSQL, pgvector
+- Redis, Celery, Alembic, pytest, Playwright
+- Next.js 16, React 19, TypeScript, Tailwind CSS v4
+- Prometheus, Docker / Docker Compose, GitHub Actions, CodeQL
 
 See [docs/TECH_STACK.md](docs/TECH_STACK.md).
 
----
-
 ## Local development
-
-Clone the repository using its actual path:
 
 ```bash
 git clone https://github.com/Eklakh-AI-Engineer/AI-Job-Agent.git
 cd AI-Job-Agent
 cp .env.example .env
-```
-
-Start the local stack:
-
-```bash
 docker compose up -d --build
-```
-
-Run the default test suite:
-
-```bash
 pytest
 ```
 
-Run the PostgreSQL integration suite when the database is available:
+Frontend:
 
 ```bash
-pytest -m postgres tests/integration_pg
+cd frontend
+npm install
+npm test
+npm run lint
+npm run build
 ```
 
-See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the maintained development workflow.
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
----
+## Verification evidence
 
-## Verification
-
-The repository's current README records a previous verification baseline of:
-
-- **188 fast tests**
-- **13 real-Postgres integration tests**
-
-These figures are retained as **recorded verification**, not as a claim that the suite was freshly executed during this documentation maintenance.
-
-Run the suite locally or rely on CI before treating test counts as current evidence.
-
----
+Previously recorded development evidence includes **233 backend tests** and **31 frontend regression tests**, plus successful TypeScript/build checks. These are historical evidence, not a claim of fresh execution for this documentation commit.
 
 ## Documentation
 
 | Document | Purpose |
 |---|---|
-| [Documentation index](docs/README.md) | Current docs and reference map |
-| [Architecture](docs/ARCHITECTURE.md) | Implemented backend boundary vs future platform |
+| [Pending implementation plan](PENDING_IMPLEMENTATION_PLAN.md) | Current remaining-work source of truth |
+| [Architecture](docs/ARCHITECTURE.md) | Current implementation boundary |
 | [Development](docs/DEVELOPMENT.md) | Setup and testing |
-| [Tech stack](docs/TECH_STACK.md) | Current vs planned technology |
-| [Roadmap](docs/ROADMAP.md) | Future phases and milestones |
-| [Security](docs/SECURITY.md) | Security boundary and controls |
-| [API reference](docs/10_API/) | Detailed endpoint contracts |
-| [Deferred components](docs/deferred-components.md) | Explicitly deferred architecture |
+| [Tech stack](docs/TECH_STACK.md) | Implemented vs planned technology |
+| [Roadmap](docs/ROADMAP.md) | Milestones and remaining evolution |
+| [Security](docs/SECURITY.md) | Security and responsible automation |
+| [API reference](docs/10_API/) | API contracts |
 
-The numbered `docs/00_*` through `docs/11_*` directories contain the project's detailed research/specification corpus. The top-level files in `docs/` provide the maintained entry points.
-
----
+The older Revised implementation plan is retained as a historical implementation record. Specifications in the numbered docs directories are not proof of runtime implementation.
 
 ## Engineering principles
 
-1. **Truthful scope** — implemented and planned functionality are explicitly separated.
-2. **Human control** — external application submission remains approval-gated by design.
-3. **Service boundaries** — routers should not absorb domain/service responsibilities.
-4. **Reproducibility** — tests, migrations, and local infrastructure should be repeatable.
-5. **No fabricated candidate claims** — resume/job tailoring must use the candidate's real qualifications.
-6. **Incremental autonomy** — automation should be added only after its supporting contracts are implemented and tested.
-
----
-
-## Security and responsibility
-
-AI Job Agent assists with career workflows; it does not replace user judgment.
-
-Users remain responsible for reviewing generated materials and final submissions. Automated interaction with third-party job platforms must respect their terms and applicable policies.
-
-See [docs/SECURITY.md](docs/SECURITY.md).
-
----
+1. Truthful scope: distinguish implemented, integrated, validated and planned work.
+2. Auditable evidence: preserve source and candidate evidence.
+3. Human control: external submission remains approval-gated.
+4. Reproducibility: tests, migrations, evaluation and configuration should be repeatable.
+5. No fabricated candidate claims.
+6. Incremental autonomy: automate only after supporting contracts are tested.
 
 ## License
 
-Licensed under the [MIT License](LICENSE).
+Licensed under the MIT License.

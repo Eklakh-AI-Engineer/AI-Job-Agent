@@ -7,6 +7,7 @@ if (
     TYPE_CHECKING
 ):  # pragma: no cover - import cycle safe, resolves at runtime via registry
     from app.models.job import ApplicationStatus
+    from app.models.candidate_kb import CandidateKBRecord
 
 
 class User(Base):
@@ -23,4 +24,7 @@ class User(Base):
     # Relationships
     job_applications: Mapped[List["ApplicationStatus"]] = relationship(
         "ApplicationStatus", back_populates="user"
+    )
+    candidate_kbs: Mapped[List["CandidateKBRecord"]] = relationship(
+        "CandidateKBRecord", back_populates="user", cascade="all, delete-orphan"
     )

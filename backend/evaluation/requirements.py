@@ -7,11 +7,34 @@ Rules:
 - Maps canonical Job fields into JobRequirements.
 - Preserves None or empty defaults when information is unavailable.
 - Never invents, hallucinates, or probabilistically infers requirements.
+- Supports both legacy Job model and unified JobPosting model.
 """
 
-from typing import List, Optional
-from backend.jobs.models import Job
+from typing import List, Optional, Protocol, runtime_checkable
 from .models import JobRequirements
+
+
+@runtime_checkable
+class JobLike(Protocol):
+    """Protocol for job-like objects that can be evaluated."""
+    id: str
+    title: Optional[str]
+    company: Optional[str]
+    location: Optional[str]
+    work_mode: Optional[str]
+    job_url: str
+    application_url: Optional[str]
+    description: Optional[str]
+    posted_date: Optional[str]
+    closing_date: Optional[str]
+    experience_requirement: Optional[str]
+    education_requirement: Optional[str]
+    required_skills: List[str]
+    preferred_skills: List[str]
+    eligibility: Optional[str]
+    compensation: Optional[str]
+    internship_information: Optional[str]
+    raw_source_reference: Optional[dict]
 
 
 def _clean_str(val: Optional[str]) -> Optional[str]:
@@ -35,7 +58,7 @@ def _clean_str_list(items: Optional[List[str]]) -> List[str]:
     return cleaned_items
 
 
-def _extract_eligibility(job: Job) -> List[str]:
+def _extract_eligibility(job: JobLike) -> List[str]:
     """
     Extract eligibility requirements only from explicit eligibility information.
     """
@@ -74,7 +97,7 @@ def _extract_eligibility(job: Job) -> List[str]:
     return eligibility_list
 
 
-def _extract_domain_requirements(job: Job) -> List[str]:
+def _extract_domain_requirements(job: JobLike) -> List[str]:
     """
     Domain requirements must only be populated when deterministically derived from explicit job data.
     Never inferred or guessed from job title or description.
@@ -93,7 +116,7 @@ def _extract_domain_requirements(job: Job) -> List[str]:
     return []
 
 
-def _extract_other_constraints(job: Job) -> List[str]:
+def _extract_other_constraints(job: JobLike) -> List[str]:
     """
     Other constraints must only contain explicitly identifiable constraints.
     Never inferred.
@@ -110,7 +133,7 @@ def _extract_other_constraints(job: Job) -> List[str]:
     return []
 
 
-def _extract_seniority(job: Job) -> Optional[str]:
+def _extract_seniority(job: JobLike) -> Optional[str]:
     """
     Extract seniority only if explicitly provided in structured source data.
     Never guessed or inferred from freeform title or description text.
@@ -121,7 +144,7 @@ def _extract_seniority(job: Job) -> Optional[str]:
     return None
 
 
-def extract_requirements(job: Job) -> JobRequirements:
+def extract_requirements(job: JobLike) -> JobRequirements:
     """
     Deterministically extract JobRequirements from a canonical Job instance.
 
@@ -143,13 +166,16 @@ def extract_requirements(job: Job) -> JobRequirements:
     """
     if job is None:
         raise TypeError("Job cannot be None")
-    if not isinstance(job, Job):
-        raise TypeError(f"Expected Job instance, got {type(job).__name__}")
-    if not job.id:
+    
+    # Reject plain dicts - must be a proper Job-like object
+    if isinstance(job, dict):
+        raise TypeError("Expected Job instance, got dict")
+    
+    if not hasattr(job, 'id') or not job.id:
         raise ValueError("Job must have a valid non-empty id")
 
     return JobRequirements(
-        job_id=job.id,
+        job_id=str(job.id),  # Ensure string ID
         role=_clean_str(job.title),
         seniority=_extract_seniority(job),
         domain_requirements=_extract_domain_requirements(job),

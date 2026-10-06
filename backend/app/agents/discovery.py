@@ -1,9 +1,19 @@
+"""
+backend/app/agents/discovery.py
+
+Job discovery agents for various job boards.
+"""
+
 import asyncio
+import logging
+import re
 from typing import List, Dict, Any
+from urllib.parse import urlparse
 from playwright.async_api import async_playwright
 from app.core.config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 class GreenhouseDiscoveryAgent:
@@ -13,11 +23,30 @@ class GreenhouseDiscoveryAgent:
 
     def __init__(self, board_url: str):
         self.board_url = board_url
+        self.company_name = self._extract_company_name(board_url)
+
+    def _extract_company_name(self, board_url: str) -> str:
+        """Extract company name from Greenhouse board URL."""
+        # boards.greenhouse.io/{company_name}
+        parsed = urlparse(board_url)
+        path_parts = parsed.path.strip("/").split("/")
+        if path_parts:
+            return path_parts[0].replace("-", " ").title()
+        return "Unknown"
+
+    def _extract_source_job_id(self, job_url: str) -> str:
+        """Extract Greenhouse job ID from URL."""
+        # https://boards.greenhouse.io/company/jobs/123456
+        match = re.search(r"/jobs/(\d+)", job_url)
+        if match:
+            return f"gh_{match.group(1)}"
+        # Fallback: hash of URL
+        return f"gh_{abs(hash(job_url)) % 1000000}"
 
     async def discover_jobs(self) -> List[Dict[str, Any]]:
         """
         Scrapes a Greenhouse job board for active job listings.
-        Returns a list of dictionaries containing title, url, location, and department.
+        Returns a list of dictionaries with all relevant job data.
         """
         jobs = []
 
@@ -30,9 +59,6 @@ class GreenhouseDiscoveryAgent:
 
             try:
                 await page.goto(self.board_url, wait_until="domcontentloaded")
-
-                # Greenhouse typically loads job postings within sections or divs with class 'level-0'
-                # or a specific section for departments.
 
                 # Modern Greenhouse boards (SPA) might not use .posting
                 # Wait extra time for React/SPA to render
@@ -62,10 +88,10 @@ class GreenhouseDiscoveryAgent:
 
                     # Fix relative URLs
                     if url.startswith("/"):
-                        from urllib.parse import urlparse
-
                         parsed_url = urlparse(self.board_url)
                         url = f"{parsed_url.scheme}://{parsed_url.netloc}{url}"
+
+                    source_job_id = self._extract_source_job_id(url)
 
                     jobs.append(
                         {
@@ -73,48 +99,32 @@ class GreenhouseDiscoveryAgent:
                             "url": url,
                             "location": location,
                             "source": "Greenhouse",
-                            "company": self.board_url.rstrip("/")
-                            .split("/")[-1]
-                            .capitalize(),
+                            "company": self.company_name,
+                            "source_job_id": source_job_id,
+                            "application_url": url,  # Greenhouse uses same URL for apply
+                            "work_mode": self._infer_work_mode(location),
+                            "raw_source_reference": {
+                                "board_url": self.board_url,
+                                "discovered_from": "greenhouse_board",
+                            },
                         }
                     )
 
             except Exception as e:
-                print(f"Error discovering jobs on {self.board_url}: {e}")
+                logger.error(f"Error discovering jobs on {self.board_url}: {e}")
             finally:
                 await browser.close()
 
         return jobs
 
-    async def save_jobs(self, jobs: List[Dict[str, Any]], db_session):
-        """
-        Saves discovered jobs to the database. Ignores duplicates based on URL.
-        """
-        from app.models.job import JobPosting
-        from sqlalchemy.dialects.postgresql import insert
-
-        if not jobs:
-            return
-
-        values = []
-        for j in jobs:
-            values.append(
-                {
-                    "title": j["title"],
-                    "company": j.get("company", "Unknown"),
-                    "location": j["location"],
-                    "url": j["url"],
-                    "source": j["source"],
-                    "job_description": "Pending extraction...",  # To be filled by another task
-                }
-            )
-
-        stmt = insert(JobPosting).values(values)
-        # On conflict do nothing for unique URL constraint
-        stmt = stmt.on_conflict_do_nothing(index_elements=["url"])
-
-        await db_session.execute(stmt)
-        await db_session.commit()
+    def _infer_work_mode(self, location: str) -> str:
+        """Infer work mode from location string."""
+        location_lower = location.lower()
+        if "remote" in location_lower:
+            return "remote"
+        elif "hybrid" in location_lower:
+            return "hybrid"
+        return "onsite"
 
 
 async def test_agent():

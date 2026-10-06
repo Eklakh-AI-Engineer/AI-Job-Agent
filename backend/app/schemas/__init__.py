@@ -8,9 +8,33 @@ from app.schemas.job import (
     JobPostingList,
     JobPostingRead,
 )
+from app.schemas.job_discovery import (
+    JobDiscoveryCreate,
+    JobDiscoveryList,
+    JobDiscoveryRead,
+)
+from app.schemas.candidate_kb import (
+    CandidateKBDeleteResponse,
+    CandidateKBResponse,
+    CandidateKBSaveRequest,
+    CandidateKBValidateRequest,
+    CandidateKBValidateResponse,
+    CandidateKBVersionList,
+    CandidateKBVersionSummary,
+)
 
 __all__ = [
     "ApplicationStatusRead",
+    "CandidateKBDeleteResponse",
+    "CandidateKBResponse",
+    "CandidateKBSaveRequest",
+    "CandidateKBValidateRequest",
+    "CandidateKBValidateResponse",
+    "CandidateKBVersionList",
+    "CandidateKBVersionSummary",
+    "JobDiscoveryCreate",
+    "JobDiscoveryList",
+    "JobDiscoveryRead",
     "JobPostingCreate",
     "JobPostingList",
     "JobPostingRead",

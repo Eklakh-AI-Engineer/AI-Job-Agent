@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-job-agent-worker
+  labels:
+    app: ai-job-agent-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-job-agent-worker
+  template:
+    metadata:
+      labels:
+        app: ai-job-agent-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/OWNER/ai-job-agent:latest
+          command: ["celery", "-A", "app.core.celery_app", "worker", "--loglevel=INFO", "--concurrency=4"]
+          envFrom:
+            - secretRef:
+                name: ai-job-agent-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          readinessProbe:
+            exec:
+              command: ["celery", "-A", "app.core.celery_app", "inspect", "ping"]
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command: ["celery", "-A", "app.core.celery_app", "inspect", "ping"]
+            initialDelaySeconds: 30
+            periodSeconds: 60

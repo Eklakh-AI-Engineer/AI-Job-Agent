@@ -8,22 +8,52 @@ container orchestration depends on, and the versioned API routers. All business
 logic lives in ``app/services`` and all HTTP shapes in ``app/schemas``.
 """
 
-from fastapi import Depends, FastAPI
+from contextlib import asynccontextmanager
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.database import get_db
+from app.core.logging import LoggingMiddleware, setup_logging
+from app.core.metrics import PrometheusMiddleware, metrics_endpoint
 
 settings = get_settings()
+
+# Configure structured logging on import
+setup_logging(
+    log_level="DEBUG" if settings.app_debug else "INFO",
+    json_logs=settings.is_production,
+)
+
+# Rate limiter: key by client IP, configurable limits via env
+limiter = Limiter(key_func=get_remote_address, default_limits=[])
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler."""
+    # Startup: validate production config
+    settings.validate_production_config()
+    yield
+    # Shutdown: cleanup if needed
+
 
 app = FastAPI(
     title=settings.app_name,
     description="API for the autonomous job application pipeline",
     version="0.4.0",
+    lifespan=lifespan,
 )
+
+# Rate limit error handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS: wildcard is fine for local development only. In production the
 # CORS_ORIGINS env var must list explicit origins.
@@ -35,7 +65,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Prometheus metrics middleware
+app.add_middleware(PrometheusMiddleware)
+
+# Request ID logging middleware (must be added after CORS to see request ID in logs)
+app.add_middleware(LoggingMiddleware)
+
 app.include_router(api_router, prefix=settings.api_v1_prefix)
+
+# Prometheus metrics endpoint
+app.add_route("/metrics", metrics_endpoint, methods=["GET"])
 
 
 @app.get("/", tags=["System"])

@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING, Optional
-from sqlalchemy import String, Text, ForeignKey
+from typing import TYPE_CHECKING, Optional, List
+from sqlalchemy import String, Text, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 from app.models.base import Base
@@ -19,6 +19,21 @@ class JobPosting(Base):
     job_description: Mapped[str] = mapped_column(Text)
     url: Mapped[str] = mapped_column(String(1024), unique=True)
     source: Mapped[str] = mapped_column(String(100))  # e.g., 'LinkedIn', 'Greenhouse'
+
+    # Extended fields for job discovery pipeline
+    source_job_id: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    application_url: Mapped[Optional[str]] = mapped_column(String(1024))
+    work_mode: Mapped[Optional[str]] = mapped_column(String(50))  # remote/hybrid/onsite
+    posted_date: Mapped[Optional[str]] = mapped_column(String(100))
+    closing_date: Mapped[Optional[str]] = mapped_column(String(100))
+    experience_requirement: Mapped[Optional[str]] = mapped_column(Text)
+    education_requirement: Mapped[Optional[str]] = mapped_column(Text)
+    required_skills: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    preferred_skills: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    eligibility: Mapped[Optional[str]] = mapped_column(Text)
+    compensation: Mapped[Optional[str]] = mapped_column(String(512))
+    internship_information: Mapped[Optional[str]] = mapped_column(Text)
+    raw_source_reference: Mapped[Optional[dict]] = mapped_column(JSON)
 
     # The vector representation for semantic search
     embedding: Mapped[Optional[list[float]]] = mapped_column(Vector(1536))

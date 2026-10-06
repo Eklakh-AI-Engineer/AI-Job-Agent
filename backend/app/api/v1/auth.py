@@ -11,13 +11,14 @@ account, so the API cannot be used to enumerate registered users.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_authentication_error
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import create_access_token
+from app.main import limiter
 from app.schemas.token import TokenResponse
 from app.schemas.user import UserCreate, UserLogin, UserRead
 from app.services.errors import (
@@ -36,7 +37,10 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
 )
-async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)) -> UserRead:
+@limiter.limit("5/minute")
+async def register(
+    request: Request, payload: UserCreate, db: AsyncSession = Depends(get_db)
+) -> UserRead:
     """Create an account. Returns the created user without any credentials."""
     try:
         user = await create_user(db, payload)
@@ -50,8 +54,9 @@ async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)) -> U
 @router.post(
     "/login", response_model=TokenResponse, summary="Exchange credentials for a token"
 )
+@limiter.limit("10/minute")
 async def login(
-    payload: UserLogin, db: AsyncSession = Depends(get_db)
+    request: Request, payload: UserLogin, db: AsyncSession = Depends(get_db)
 ) -> TokenResponse:
     """Authenticate and return a bearer token."""
     try:

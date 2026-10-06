@@ -24,6 +24,7 @@ from app.models.document import GeneratedDocument
 from app.models.job import JobPosting
 from app.services.candidate_kb_service import load_candidate_kb
 from app.services.cover_letter_service import build_cover_letter
+from app.services.document_artifacts import build_artifacts
 from app.services.document_storage import build_document_key, get_document_storage
 from app.services.resume_service import build_tailored_resume
 from backend.evaluation.requirements import extract_requirements

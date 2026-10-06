@@ -155,30 +155,18 @@ The system supports multiple embedding providers/dimensions while the persisted 
 
 ## P1.1 Complete job-detail / JD extraction
 
-Current discovery components can identify job listings, but listing discovery is not the same as extracting a complete job description.
+- [x] Fetch the canonical detail page for every discovered listing before persistence.
+- [x] Extract the actual visible job description/body with source-aware selectors plus a conservative DOM fallback.
+- [x] Use the detail URL as the application URL when the source does not provide a separate one.
+- [x] Preserve raw source evidence/reference and extraction metadata.
+- [x] Record extraction method, timestamp, selector, description length and failure reason.
+- [x] Never persist `Pending extraction...` or another fabricated placeholder.
+- [x] Skip failed detail extractions rather than ingesting incomplete records.
+- [x] Add unit coverage for normalization and extraction evidence metadata.
 
-Implement:
+Remaining structured-field normalization is intentionally handled by P1.2 so explicit source values can be distinguished from inferred values.
 
-- [ ] Fetch the detail page for each discovered listing.
-- [ ] Extract the actual job description/body.
-- [ ] Extract application URL reliably.
-- [ ] Extract structured fields when explicitly present:
-  - required skills;
-  - preferred skills;
-  - experience;
-  - education;
-  - eligibility;
-  - work mode;
-  - location;
-  - compensation;
-  - employment type.
-- [ ] Preserve raw source evidence/reference.
-- [ ] Store extraction status and failure reason.
-- [ ] Avoid replacing missing descriptions with placeholder text.
-- [ ] Add source-specific selectors/fallbacks.
-- [ ] Add fixtures for each supported source.
-
-**Acceptance:** a discovered job can progress from listing → full JD → structured `JobPosting` without fabricated fields.
+**Acceptance:** a discovered job progresses from listing → verified detail-page JD → canonical `JobPosting`, with failed extraction visible in task errors rather than silently persisted.
 
 ---
 

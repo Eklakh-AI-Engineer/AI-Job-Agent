@@ -20,7 +20,6 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.job_adapter import job_posting_to_legacy_job
 from app.models.document import GeneratedDocument
 from app.models.job import JobPosting
 from app.services.candidate_kb_service import load_candidate_kb
@@ -84,8 +83,7 @@ async def generate_resume(
     job = await _load_job(db, job_id)
     kb = await load_candidate_kb(db, user_id)
 
-    legacy_job = job_posting_to_legacy_job(job)
-    requirements = extract_requirements(legacy_job)
+    requirements = extract_requirements(job)
 
     resume = build_tailored_resume(kb, requirements)
     content = resume.render_text()

@@ -430,6 +430,7 @@ def calculate_fit_score(
     eligibility: EligibilityResult,
     role_match: RoleMatch,
     kb: CandidateKB,
+    requirements: Optional[JobRequirements] = None,
 ) -> tuple[float, PriorityLevel, RecommendationStatus]:
     """
     Calculate overall fit score (0-100) and derive priority + recommendation.
@@ -488,7 +489,8 @@ def calculate_fit_score(
         eligibility_score * 0.20 +
         role_score * 0.15 +
         evidence_score * 0.10 +
-        _basic_experience_score(job_requirements, kb) * 0.075 +\n        _basic_preference_score(job_requirements, kb) * 0.075
+        (_basic_experience_score(requirements, kb) if requirements else 50.0) * 0.075 +
+        (_basic_preference_score(requirements, kb) if requirements else 50.0) * 0.075
     )
     
     fit_score = round(max(0, min(100, fit_score)), 1)

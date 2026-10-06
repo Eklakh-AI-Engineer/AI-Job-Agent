@@ -95,10 +95,6 @@ jobs:
         working-directory: frontend
         run: npm install --no-save @playwright/test@1.63.0
 
-      - name: Install Chromium
-        working-directory: frontend
-        run: npx playwright install chromium
-
       - name: Build frontend
         working-directory: frontend
         env:

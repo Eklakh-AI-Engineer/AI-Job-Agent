@@ -13,12 +13,15 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 
-from backend.evaluation.hybrid_ranker import RANKING_VERSION
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "backend"))
+
+from evaluation.hybrid_ranker import RANKING_VERSION
 from backend.evaluation.metrics import aggregate_metrics, evaluate_ranked_case
 
 
-ROOT = Path(__file__).resolve().parents[1]
 DATASET = ROOT / "docs" / "evaluation" / "benchmark_job_ranking_v1.jsonl"
 THRESHOLDS = ROOT / "docs" / "evaluation" / "ranking_regression_thresholds_v1.json"
 DEFAULT_PREDICTIONS = ROOT / "docs" / "evaluation" / "predictions_benchmark_fixture_v1.json"

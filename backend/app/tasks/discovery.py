@@ -288,6 +288,10 @@ async def _discover_from_source(source: BaseJobSource, url: str) -> DiscoveryRes
                         errors.append(error_msg)
             finally:
                 await browser.close()
+    except Exception as e:
+        error_msg = f"Discovery failed for {url}: {e}"
+        logger.exception(error_msg)
+        errors.append(error_msg)
     # Bulk upsert
     ingested = 0
     duplicates = 0

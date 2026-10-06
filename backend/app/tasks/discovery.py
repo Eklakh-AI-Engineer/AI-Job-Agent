@@ -17,8 +17,12 @@ from app.agents.discovery import GreenhouseDiscoveryAgent
 from app.agents.lever import LeverDiscoveryAgent
 from app.agents.workday import WorkdayDiscoveryAgent
 from app.core.celery_app import celery_app
+from app.core.config import get_settings
+from app.services.job_detail_extraction import extract_job_detail
+from playwright.async_api import async_playwright
 
 logger = logging.getLogger(__name__)
+settings = get_settings()
 
 
 # Lazy imports for database-dependent functions
@@ -246,35 +250,44 @@ async def _discover_from_source(source: BaseJobSource, url: str) -> DiscoveryRes
         
         discovered = len(jobs)
         
-        # Convert to discovery payloads
-        for job_data in jobs:
+        # Listing discovery gives canonical URLs; persist only after detail extraction.
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=settings.playwright_headless,
+                args=["--no-sandbox", "--disable-setuid-sandbox"],
+            )
+            detail_page = await browser.new_page()
             try:
-                # Apply source-specific normalization
-                normalized = source.normalize_job(job_data, url)
-                
-                payload = JobDiscoveryCreate(
-                    title=normalized.get("title", ""),
-                    company=normalized.get("company", ""),
-                    location=normalized.get("location", ""),
-                    job_description=normalized.get("job_description", "Pending extraction..."),
-                    url=normalized["url"],
-                    source=normalized["source"],
-                    source_job_id=normalized.get("source_job_id"),
-                    application_url=normalized.get("application_url"),
-                    work_mode=normalized.get("work_mode"),
-                    raw_source_reference=normalized,
-                )
-                all_payloads.append(payload)
-            except Exception as e:
-                error_msg = f"Failed to create payload for {job_data.get('url', 'unknown')}: {e}"
-                logger.error(error_msg)
-                errors.append(error_msg)
-                
-    except Exception as e:
-        error_msg = f"Failed to discover from {url}: {e}"
-        logger.exception(error_msg)
-        errors.append(error_msg)
-    
+                for job_data in jobs:
+                    try:
+                        normalized = source.normalize_job(job_data, url)
+                        detail_url = normalized.get("url")
+                        if not detail_url:
+                            raise ValueError("discovered job has no canonical detail URL")
+
+                        detail = await extract_job_detail(detail_page, detail_url)
+                        source_reference = dict(normalized.get("raw_source_reference") or normalized)
+                        source_reference["detail_extraction"] = detail["extraction"]
+
+                        payload = JobDiscoveryCreate(
+                            title=normalized.get("title", ""),
+                            company=normalized.get("company", ""),
+                            location=normalized.get("location", ""),
+                            job_description=detail["job_description"],
+                            url=detail_url,
+                            source=normalized["source"],
+                            source_job_id=normalized.get("source_job_id"),
+                            application_url=normalized.get("application_url") or detail_url,
+                            work_mode=normalized.get("work_mode"),
+                            raw_source_reference=source_reference,
+                        )
+                        all_payloads.append(payload)
+                    except Exception as e:
+                        error_msg = f"Failed detail extraction for {job_data.get('url', 'unknown')}: {e}"
+                        logger.warning(error_msg)
+                        errors.append(error_msg)
+            finally:
+                await browser.close()
     # Bulk upsert
     ingested = 0
     duplicates = 0

@@ -28,9 +28,15 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.FRONTEND_QA_API_URL }}
         run: npm run build
+      - name: Install Playwright test runner
+        working-directory: frontend
+        run: npm install --no-save @playwright/test@1.63.0
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
       - name: Run configured live browser QA
         working-directory: frontend
         env:
           PLAYWRIGHT_TEST_BASE_URL: ${{ vars.FRONTEND_QA_BASE_URL }}
           PLAYWRIGHT_API_URL: ${{ vars.FRONTEND_QA_API_URL }}
-        run: npm exec --yes --package=@playwright/test@1.63.0 -- playwright test
+        run: npx playwright test

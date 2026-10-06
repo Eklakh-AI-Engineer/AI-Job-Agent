@@ -72,6 +72,8 @@ def _normalize_experience(value: Optional[str]) -> Optional[str]:
     if not value:
         return None
     text = " ".join(str(value).strip().split())
+    if not text:
+        return None
     # Reject impossible negative ranges while preserving source wording.
     numbers = [float(x) for x in __import__("re").findall(r"(\\d+(?:\\.\\d+)?)", text)]
     if numbers and any(n < 0 for n in numbers):

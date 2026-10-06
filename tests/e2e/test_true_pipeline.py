@@ -11,6 +11,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.schemas.job import JobPostingCreate
+from app.schemas.user import UserCreate
+from app.services.user_service import create_user
 from app.services.application_service import APPROVED, MATCHED, create_application, transition_application
 from app.services.candidate_kb_service import save_candidate_kb_from_dict
 from app.services.document_service import generate_cover_letter, generate_resume, update_document_status
@@ -25,7 +27,10 @@ from backend.evaluation.hybrid_ranker import rank_candidate_job
 @pytest.mark.asyncio
 async def test_true_application_pipeline(db_session, tmp_storage, tmp_path):
     kb = load_candidate_kb_from_dir("tests/fixtures/candidate")
-    user = type("UserRef", (), {"id": 1})()
+    user_record = await create_user(
+        db_session, UserCreate(email="e2e@example.com", password="supersecret123")
+    )
+    user = type("UserRef", (), {"id": user_record.id})()
 
     # Persist the same canonical candidate data consumed by document generation.
     await save_candidate_kb_from_dict(

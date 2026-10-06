@@ -7,6 +7,7 @@ service composition without external credentials or real submissions.
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
+from pathlib import Path
 
 import pytest
 
@@ -29,7 +30,8 @@ from backend.evaluation.hybrid_ranker import rank_candidate_job
 async def test_true_application_pipeline(db_session, tmp_path):
     old_storage = get_document_storage()
     set_document_storage(LocalFilesystemStorage(str(tmp_path / "documents")))
-    kb = load_candidate_kb_from_dir("tests/fixtures/candidate")
+    repo_root = Path(__file__).resolve().parents[2]
+    kb = load_candidate_kb_from_dir(str(repo_root / "tests" / "fixtures" / "candidate"))
     user_record = await create_user(
         db_session, UserCreate(email="e2e@example.com", password="supersecret123")
     )

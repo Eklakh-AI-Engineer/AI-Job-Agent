@@ -75,10 +75,11 @@ async def test_true_application_pipeline(db_session, tmp_path):
 
     resume = await generate_resume(db_session, user.id, job.id)
     letter = await generate_cover_letter(db_session, user.id, job.id)
-    assert resume.meta["artifacts"]["pdf"]["storage_key"].endswith(".pdf")
-    assert resume.meta["artifacts"]["docx"]["storage_key"].endswith(".docx")
-    assert letter.meta["artifacts"]["pdf"]["storage_key"].endswith(".pdf")
-    assert letter.meta["artifacts"]["docx"]["storage_key"].endswith(".docx")
+    storage = get_document_storage()
+    assert resume.storage_key and resume.storage_key.endswith(".pdf")
+    assert letter.storage_key and letter.storage_key.endswith(".pdf")
+    assert (await storage.get_bytes(resume.storage_key)).startswith(b"%PDF")
+    assert (await storage.get_bytes(letter.storage_key)).startswith(b"%PDF")
 
     await update_document_status(db_session, user.id, resume.id, "approved")
     application = await create_application(

@@ -1,0 +1,41 @@
+name: Real ATS Dry-Run Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/app/agents/**"
+      - "backend/app/services/browser_automation_service.py"
+      - "scripts/validate_real_ats.py"
+      - "backend/requirements*.txt"
+      - ".github/workflows/real-ats-validation.yml"
+
+jobs:
+  lever-dry-run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Validate current public Lever application pages without submission
+        run: |
+          python ../scripts/validate_real_ats.py             --url "https://jobs.lever.co/omnidian/e4bd2d30-9fb4-443f-a7c6-628851828074"             --url "https://jobs.lever.co/termgrid/11b495d2-f195-41d9-8389-159637db9fa1"

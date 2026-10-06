@@ -64,6 +64,7 @@ test("live frontend critical path uses the running backend", async ({ page, requ
   await page.reload();
   expect((await meResponse).status()).toBe(200);
 
+  await page.goto("/opportunities");
   await expect(page.getByRole("heading", { name: "Opportunities" })).toBeVisible();
   const browserJobs = await page.evaluate(async (api) => {
     const token = localStorage.getItem("aja_token");

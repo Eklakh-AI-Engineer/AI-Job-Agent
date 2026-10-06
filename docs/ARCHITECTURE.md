@@ -45,3 +45,56 @@ Job Sources
 8. CI now gates backend/frontend correctness; observability and deployment hardening are documented with remaining environment-level controls.
 
 See [PENDING_IMPLEMENTATION_PLAN.md](../PENDING_IMPLEMENTATION_PLAN.md).
+
+## Discovery → ranking → application sequence
+
+```mermaid
+sequenceDiagram
+  participant S as Job Source
+  participant D as Discovery
+  participant J as JobPosting
+  participant R as Hybrid Ranker
+  participant C as Candidate KB
+  participant G as Document Service
+  participant A as Application Service
+  participant B as Browser Agent
+
+  S->>D: listing URL
+  D->>D: fetch detail page + extract JD
+  D->>J: persist verified canonical job
+  R->>J: requirements + job text
+  R->>C: evidence + candidate embedding
+  R-->>A: score + components + ranking version
+  A->>G: generate approved documents
+  G-->>A: PDF/DOCX + SHA-256
+  A->>B: approved submission request
+  B-->>A: submission result + evidence
+  A->>A: append immutable audit event
+```
+
+## Browser automation safety boundary
+
+```mermaid
+flowchart LR
+  D[Discovered job] --> M[Matched]
+  M --> P[Human approval]
+  P --> DRY[Dry run]
+  DRY --> REAL[Explicit real submission]
+  REAL --> AUDIT[Audit event + evidence]
+  P -. reject .-> STOP[No external side effect]
+  DRY -. failure .-> STOP
+```
+
+## Core data boundary
+
+```mermaid
+flowchart TB
+  USER[User] --> KB[Candidate KB]
+  JOB[JobPosting] --> REQ[Requirements]
+  KB --> RANK[Hybrid Ranking]
+  REQ --> RANK
+  RANK --> APP[ApplicationStatus]
+  APP --> EVT[ApplicationEvent]
+  APP --> DOC[Generated Documents]
+  DOC --> ART[PDF/DOCX Artifact]
+```

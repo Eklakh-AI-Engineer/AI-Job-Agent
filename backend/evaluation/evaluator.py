@@ -690,7 +690,7 @@ def evaluate_candidate_against_job(
         technical_match=round(skill_score, 1),
         project_match=round(skill_score, 1),
         experience_match=round(_basic_experience_score(job_requirements, candidate_kb), 1),
-        preference_match=round(_basic_preference_score(job_requirements, candidate_kb), 1)
+        preference_match=round(_basic_preference_score(job_requirements, candidate_kb), 1),
         evidence_quality=round(evidence_score, 1),
         matched_skills=matched_skills,
         partial_skills=partial_skills,

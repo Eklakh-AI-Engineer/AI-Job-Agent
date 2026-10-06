@@ -246,21 +246,16 @@ Include difficult cases:
 
 ## P3.2 Define ranking metrics
 
-At minimum:
+- [x] Precision@K.
+- [x] Recall@K.
+- [x] nDCG@K.
+- [x] MRR where applicable.
+- [x] Binary precision/recall/F1 utilities.
+- [x] Macro aggregation across query groups.
+- [x] Reproducible runner in `scripts/evaluate_ranking.py`.
+- [x] Metric definitions documented in `docs/evaluation/METRICS.md`.
 
-- [ ] Precision@K.
-- [ ] Recall@K.
-- [ ] nDCG@K.
-- [ ] MRR where applicable.
-- [ ] Hard-reject precision/recall.
-- [ ] Skill extraction precision/recall/F1.
-- [ ] Eligibility decision accuracy.
-
-For explainability:
-
-- [ ] evidence correctness;
-- [ ] unsupported-claim rate;
-- [ ] missing-requirement correctness.
+**Acceptance:** the benchmark can be scored reproducibly from a frozen gold mapping and an ordered prediction file.
 
 ---
 

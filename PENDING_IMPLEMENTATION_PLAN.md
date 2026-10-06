@@ -221,7 +221,7 @@ Implemented as `backend/evaluation/hybrid_ranker.py`.
 
 ## P3.1 Create the golden evaluation dataset
 
-Create a human-verified benchmark from the actual job corpus.
+A 50-query × 5-candidate **provisional** benchmark now exists at `docs/evaluation/golden_job_ranking_v1.jsonl`. It is deliberately not marked complete because the repository does not yet contain a sufficiently large real persisted corpus and the cases are not human-verified. See `docs/evaluation/README.md` for the promotion procedure.
 
 Target:
 

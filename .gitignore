@@ -59,3 +59,4 @@ backend/job_count.py
 backend/test_db.py
 backend/tree_output.txt
 tree_output.txt
+backend/data/

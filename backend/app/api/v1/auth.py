@@ -9,7 +9,7 @@ returns a single generic 401 for unknown email, wrong password, or disabled
 account, so the API cannot be used to enumerate registered users.
 """
 
-from __future__ import annotations
+
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +18,7 @@ from app.api.deps import require_authentication_error
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import create_access_token
-from app.main import limiter
+from app.core.rate_limit import limiter
 from app.schemas.token import TokenResponse
 from app.schemas.user import UserCreate, UserLogin, UserRead
 from app.services.errors import (

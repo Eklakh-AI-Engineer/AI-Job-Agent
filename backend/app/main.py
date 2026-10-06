@@ -13,8 +13,8 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from slowapi.errors import RateLimitExceeded
 
 from app.api.v1.router import api_router
@@ -31,8 +31,9 @@ setup_logging(
     json_logs=settings.is_production,
 )
 
-# Rate limiter: key by client IP, configurable limits via env
-limiter = Limiter(key_func=get_remote_address, default_limits=[])
+
+from app.core.rate_limit import limiter
+
 
 
 @asynccontextmanager
@@ -54,6 +55,7 @@ app = FastAPI(
 # Rate limit error handler
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 # CORS: wildcard is fine for local development only. In production the
 # CORS_ORIGINS env var must list explicit origins.

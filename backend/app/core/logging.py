@@ -106,7 +106,7 @@ class LoggingMiddleware:
         
         # Generate or extract request ID
         request_id = generate_request_id()
-        headers = dict(scope.get("headers", []))
+        headers = scope.get("headers", [])
         
         # Check for existing request ID in headers
         for key, value in headers:

@@ -95,6 +95,7 @@ async def generate_resume(
         "ats": resume.ats,
         "header": resume.header,
         "sections": ["summary", "skills", "experience", "projects", "education"],
+        "artifact_version": 1,
     }
 
     doc = GeneratedDocument(

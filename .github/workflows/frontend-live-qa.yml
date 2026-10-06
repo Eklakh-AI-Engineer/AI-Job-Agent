@@ -46,6 +46,7 @@ jobs:
       SECRET_KEY: frontend-live-qa-secret
       JWT_SECRET: frontend-live-qa-jwt
       CORS_ORIGINS: http://127.0.0.1:3000
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
       - uses: actions/checkout@v4

@@ -265,5 +265,5 @@ def extract_requirements(job: JobLike) -> JobRequirements:
             "posted_date": _validate_date_text(getattr(job, "posted_date", None)),
             "closing_date": _validate_date_text(getattr(job, "closing_date", None)),
         },
-        extraction_confidence=1.0 if job.job_description and len(job.job_description.strip()) >= 120 else 0.0,
+        extraction_confidence=1.0 if len(str(getattr(job, "job_description", getattr(job, "description", "")) or "").strip()) >= 120 else 0.0,
     )

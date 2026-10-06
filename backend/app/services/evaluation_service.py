@@ -11,7 +11,6 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.job_adapter import job_posting_to_legacy_job
 from app.models.job import JobPosting
 from app.services.candidate_kb_service import (
     CandidateKBNotFoundError,
@@ -58,11 +57,8 @@ async def evaluate_job_for_user(
 
         raise JobNotFoundError(f"Job posting {job_id} not found")
 
-    # 2. Convert to legacy Job model for evaluation pipeline
-    legacy_job = job_posting_to_legacy_job(job)
-
-    # 3. Extract job requirements (deterministic, Phase 3B)
-    job_requirements = extract_requirements(legacy_job)
+    # JobPosting is the canonical application-domain representation.
+    job_requirements = extract_requirements(job)
 
     # 4. Load candidate KB from database
     candidate_kb = await load_candidate_kb(db, user_id)
@@ -82,6 +78,5 @@ async def evaluate_job_with_kb(
 
     Useful for batch evaluation or when KB is already loaded.
     """
-    legacy_job = job_posting_to_legacy_job(job)
-    job_requirements = extract_requirements(legacy_job)
+    job_requirements = extract_requirements(job)
     return evaluate_candidate_against_job(job_requirements, candidate_kb)

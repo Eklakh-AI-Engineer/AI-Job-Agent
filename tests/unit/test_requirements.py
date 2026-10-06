@@ -248,3 +248,37 @@ def test_extract_requirements_with_fixture_source():
             assert req.location_requirements == job.location.strip()
         if job.work_mode:
             assert req.work_mode == job.work_mode.strip()
+
+
+
+def test_extract_requirements_accepts_canonical_job_posting():
+    from app.models.job import JobPosting
+
+    job = JobPosting(
+        title="Machine Learning Engineer",
+        company="Example",
+        location="Remote",
+        job_description="Build ML systems.",
+        url="https://example.com/jobs/123",
+        source="greenhouse",
+        source_job_id="123",
+        work_mode="remote",
+        experience_requirement="2+ years",
+        education_requirement="Bachelor's degree",
+        required_skills=["Python", "PyTorch"],
+        preferred_skills=["Docker"],
+        eligibility="Authorized to work",
+        raw_source_reference={"seniority": "mid"},
+    )
+
+    requirements = extract_requirements(job)
+
+    assert requirements.job_id == str(job.id)
+    assert requirements.role == "Machine Learning Engineer"
+    assert requirements.required_skills == ["Python", "PyTorch"]
+    assert requirements.preferred_skills == ["Docker"]
+    assert requirements.experience_requirements == "2+ years"
+    assert requirements.education_requirements == "Bachelor's degree"
+    assert requirements.location_requirements == "Remote"
+    assert requirements.work_mode == "remote"
+    assert requirements.seniority == "mid"

@@ -18,6 +18,7 @@ tested without a browser or network.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import tempfile
@@ -49,6 +50,7 @@ from app.services.application_service import (
     transition_application,
 )
 from app.services.candidate_kb_service import load_candidate_kb
+from app.services.document_storage import get_document_storage
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +117,7 @@ async def build_applicant_data(
 async def _materialize_approved_doc(
     db: AsyncSession, user_id: int, job_id: int, doc_type: str, out_dir: str
 ) -> Optional[str]:
-    """Write the latest approved document to a local file for upload."""
+    """Materialise the approved PDF artifact for browser upload."""
     result = await db.execute(
         select(GeneratedDocument)
         .where(
@@ -130,16 +132,36 @@ async def _materialize_approved_doc(
     doc = result.scalar_one_or_none()
     if doc is None:
         return None
-    os.makedirs(out_dir, exist_ok=True)
-    path = os.path.join(out_dir, f"user{user_id}_job{job_id}_{doc_type}_v{doc.version}.txt")
-    try:
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write(doc.content)
-        return path
-    except Exception as exc:  # noqa: BLE001
-        logger.warning(f"Could not materialise {doc_type} document: {exc}")
+
+    artifacts = (doc.meta or {}).get("artifacts", {})
+    artifact = artifacts.get("pdf")
+    if not artifact or not artifact.get("storage_key"):
+        logger.warning("Approved %s document has no PDF artifact", doc_type)
         return None
 
+    storage = get_document_storage()
+    payload = await storage.get_bytes(artifact["storage_key"])
+    if payload is None:
+        logger.warning("Stored PDF artifact is missing for document %s", doc.id)
+        return None
+
+    expected_sha = artifact.get("sha256")
+    if expected_sha and hashlib.sha256(payload).hexdigest() != expected_sha:
+        logger.error("Artifact integrity check failed for document %s", doc.id)
+        return None
+
+    os.makedirs(out_dir, exist_ok=True)
+    filename = artifact.get(
+        "filename", f"user{user_id}_job{job_id}_{doc_type}_v{doc.version}.pdf"
+    )
+    path = os.path.join(out_dir, filename)
+    try:
+        with open(path, "wb") as fh:
+            fh.write(payload)
+        return path
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(f"Could not materialise {doc_type} PDF artifact: {exc}")
+        return None
 
 async def submit_application(
     db: AsyncSession,

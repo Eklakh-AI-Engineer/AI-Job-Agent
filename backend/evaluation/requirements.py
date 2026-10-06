@@ -7,7 +7,7 @@ Rules:
 - Maps canonical Job fields into JobRequirements.
 - Preserves None or empty defaults when information is unavailable.
 - Never invents, hallucinates, or probabilistically infers requirements.
-- Supports both legacy Job model and unified JobPosting model.
+- The application path consumes the unified ``JobPosting`` model directly. The structural protocol keeps the pure evaluator independent of SQLAlchemy.
 """
 
 from typing import List, Optional, Protocol, runtime_checkable
@@ -16,26 +16,23 @@ from .models import JobRequirements
 
 @runtime_checkable
 class JobLike(Protocol):
-    """Protocol for job-like objects that can be evaluated."""
-    id: str
+    """Minimal canonical job contract consumed by requirement extraction.
+
+    The application path uses ``app.models.job.JobPosting`` directly. The
+    protocol remains structural so the pure evaluation package stays independent
+    of SQLAlchemy while legacy fixtures are migrated.
+    """
+
+    id: object
     title: Optional[str]
-    company: Optional[str]
     location: Optional[str]
     work_mode: Optional[str]
-    job_url: str
-    application_url: Optional[str]
-    description: Optional[str]
-    posted_date: Optional[str]
-    closing_date: Optional[str]
-    experience_requirement: Optional[str]
-    education_requirement: Optional[str]
     required_skills: List[str]
     preferred_skills: List[str]
+    experience_requirement: Optional[str]
+    education_requirement: Optional[str]
     eligibility: Optional[str]
-    compensation: Optional[str]
-    internship_information: Optional[str]
     raw_source_reference: Optional[dict]
-
 
 def _clean_str(val: Optional[str]) -> Optional[str]:
     """Return stripped string if non-empty, otherwise None."""
@@ -169,7 +166,7 @@ def extract_requirements(job: JobLike) -> JobRequirements:
     
     # Reject plain dicts - must be a proper Job-like object
     if isinstance(job, dict):
-        raise TypeError("Expected Job instance, got dict")
+        raise TypeError("Expected JobPosting-like instance, got dict")
     
     if not hasattr(job, 'id') or not job.id:
         raise ValueError("Job must have a valid non-empty id")

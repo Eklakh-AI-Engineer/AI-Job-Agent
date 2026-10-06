@@ -90,14 +90,14 @@ def _validate_date_text(value: Optional[str]) -> str:
             return "valid"
         except ValueError:
             pass
-    if __import__("re").fullmatch(r"\\d{4}-\\d{2}", text):
+    if __import__("re").fullmatch(r"\d{4}-\d{2}", text):
         try:
             year, month = map(int, text.split("-"))
             if 1 <= month <= 12 and 1900 <= year <= 2100:
                 return "valid_reduced_precision"
         except ValueError:
             pass
-    if __import__("re").fullmatch(r"\\d{4}", text):
+    if __import__("re").fullmatch(r"\d{4}", text):
         return "valid_year"
     return "invalid"
 

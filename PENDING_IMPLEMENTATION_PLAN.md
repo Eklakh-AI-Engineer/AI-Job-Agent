@@ -124,15 +124,13 @@ The root README currently describes an earlier backend-foundation milestone and 
 
 ## P0.3 Establish one canonical job pipeline
 
-Although the repository has unified the primary SQLAlchemy job model, legacy evaluation structures/adapters still exist.
+- [x] Define `JobPosting` as the canonical persisted job representation.
+- [x] Evaluation and document generation consume canonical `JobPosting` objects directly.
+- [x] Keep the legacy `backend/jobs` model only for compatibility with older unit fixtures.
+- [x] Remove the legacy adapter from the active application path.
+- [x] Document the compatibility boundary in the architecture specification.
 
-- [ ] Identify every remaining job model/schema/repository.
-- [ ] Define `JobPosting` as the canonical persisted job representation.
-- [ ] Keep adapters only where they provide a deliberate compatibility boundary.
-- [ ] Remove dead/duplicated pathways where safe.
-- [ ] Add an architecture test or documented contract preventing new code from bypassing the canonical pipeline.
-
-**Acceptance:** discovery → normalization → persistence → evaluation → search uses one clearly documented canonical job representation.
+**Acceptance:** the active discovery → normalization → persistence → evaluation → search path uses `JobPosting` as the canonical representation.
 
 ---
 
@@ -140,12 +138,14 @@ Although the repository has unified the primary SQLAlchemy job model, legacy eva
 
 The system supports multiple embedding providers/dimensions while the persisted vector schema must have a compatible dimensionality.
 
-- [ ] Choose the production embedding model/dimension for v1.
-- [ ] Make the database vector dimension match that contract.
-- [ ] Validate provider/model/dimension compatibility at startup.
-- [ ] Fix and test embedding regeneration/backfill paths.
-- [ ] Define the migration procedure when changing embedding models.
-- [ ] Record model name, dimension and generation metadata where needed for reproducibility.
+- [x] Choose the v1 production contract: OpenAI `text-embedding-3-small`, 1536 dimensions.
+- [x] Keep the database vector dimension at `VECTOR(1536)`.
+- [x] Validate configured provider/model/dimension compatibility at application startup.
+- [x] Validate generated payload dimensions before persistence and search.
+- [x] Validate direct database writes through `update_job_embedding`.
+- [x] Cover backfill/regeneration through the same provider contract.
+- [x] Define model-change procedure: regenerate all stored vectors before changing the schema/index contract; do not mix dimensions in one index.
+- [x] Preserve model and dimension in embedding task results/metrics for reproducibility.
 
 **Acceptance:** no provider can silently write vectors incompatible with the configured database schema.
 

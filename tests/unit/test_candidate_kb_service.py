@@ -223,3 +223,161 @@ async def test_save_rejects_invalid_document(db_session, kb_user):
         await save_candidate_kb_from_dict(
             db_session, kb_user, make_kb_dict(target_role="Product Manager")
         )
+
+
+# ---------------------------------------------------------------------------
+# Regression: canonical collection shape (mapping vs bare array)
+# ---------------------------------------------------------------------------
+
+
+def test_canonical_mapping_shape_is_accepted():
+    """The canonical shape nests collections: {"skills": {"skills": [...]}}."""
+    kb = validate_kb_dict(make_kb_dict())
+    assert len(kb.skills.skills) == 2
+    assert len(kb.claims.claims) == 2
+
+
+def test_bare_array_skills_is_rejected():
+    """
+    Regression for the Profile editor bug: sending skills as a bare list
+    (instead of {"skills": [...]}) must be rejected, not silently mishandled.
+    """
+    data = make_kb_dict()
+    data["skills"] = data["skills"]["skills"]  # bare array
+    with pytest.raises(CandidateKBValidationError):
+        validate_kb_dict(data)
+
+
+def test_bare_array_claims_is_rejected():
+    data = make_kb_dict()
+    data["claims"] = data["claims"]["claims"]  # bare array
+    with pytest.raises(CandidateKBValidationError):
+        validate_kb_dict(data)
+
+
+def test_missing_collection_keys_default_to_empty():
+    """Collections may be omitted entirely and default to empty."""
+    kb = validate_kb_dict(
+        {
+            "profile": {
+                "candidate_id": "CAND-1",
+                "full_name": "Test",
+                "target_roles": ["AI Engineer"],
+                "education": {"degree": "B.S.", "field_of_study": "CS"},
+            },
+            "skills": {},
+            "claims": {},
+            "experience": {},
+            "preferences": {},
+        }
+    )
+    assert kb.skills.skills == []
+    assert kb.claims.claims == []
+    assert kb.experience.work_experience == []
+    assert kb.experience.projects == []
+
+
+async def test_canonical_save_and_load_round_trip(db_session, kb_user):
+    """The fixed (canonical) payload saves and loads back intact."""
+    await save_candidate_kb_from_dict(db_session, kb_user, make_kb_dict())
+    kb = await load_candidate_kb(db_session, kb_user)
+    assert kb.profile.candidate_id == "CAND-1"
+    assert len(kb.skills.skills) == 2
+    assert len(kb.claims.claims) == 2
+
+
+async def test_bare_array_payload_rejected_on_save(db_session, kb_user):
+    """The exact buggy editor payload is rejected at save time."""
+    data = make_kb_dict()
+    data["skills"] = data["skills"]["skills"]
+    with pytest.raises(CandidateKBValidationError):
+        await save_candidate_kb_from_dict(db_session, kb_user, data)
+
+
+def test_frontend_coerced_string_records_are_valid():
+    """
+    Regression for the editor's string -> record coercion.
+
+    The frontend turns bare strings like "Python" into full records. This
+    asserts the exact shapes it emits are accepted by the backend validator.
+    """
+    data = {
+        "profile": {
+            "candidate_id": "CAND-1",
+            "full_name": "Ada",
+            "target_roles": ["AI Engineer"],
+            "education": {"degree": "B.S.", "field_of_study": "CS"},
+        },
+        "skills": {
+            "skills": [
+                {
+                    "id": "SKILL-AUTO-1",
+                    "name": "Python",
+                    "category": None,
+                    "verified": False,
+                    "evidence_claims": [],
+                    "disclosure": "undetermined",
+                    "transferable_to": [],
+                },
+                {
+                    "id": "SKILL-AUTO-2",
+                    "name": "RAG",
+                    "category": None,
+                    "verified": False,
+                    "evidence_claims": [],
+                    "disclosure": "undetermined",
+                    "transferable_to": [],
+                },
+            ]
+        },
+        "claims": {
+            "claims": [
+                {
+                    "id": "CLAIM-AUTO-1",
+                    "title": "LLM",
+                    "statement": "LLM",
+                    "verified": False,
+                    "verification_source": None,
+                    "disclosure": "undetermined",
+                    "associated_skills": [],
+                }
+            ]
+        },
+        "experience": {
+            "work_experience": [
+                {
+                    "id": "EXP-AUTO-1",
+                    "role": "ML Intern",
+                    "company": "",
+                    "location": None,
+                    "work_mode": None,
+                    "start_date": None,
+                    "end_date": None,
+                    "duration_months": None,
+                    "verified": False,
+                    "disclosure": "undetermined",
+                    "claims": [],
+                }
+            ],
+            "projects": [
+                {
+                    "id": "PROJ-AUTO-1",
+                    "title": "Vision Model",
+                    "domain": [],
+                    "skills_used": [],
+                    "description": None,
+                    "verified": False,
+                    "verification_source": None,
+                    "disclosure": "undetermined",
+                    "claims": [],
+                }
+            ],
+        },
+        "preferences": {},
+    }
+
+    kb = validate_kb_dict(data)
+    assert [s.name for s in kb.skills.skills] == ["Python", "RAG"]
+    assert [c.title for c in kb.claims.claims] == ["LLM"]
+    assert kb.experience.work_experience[0].role == "ML Intern"
+    assert kb.experience.projects[0].title == "Vision Model"

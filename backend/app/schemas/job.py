@@ -30,6 +30,19 @@ class JobPostingCreate(BaseModel):
         ..., max_length=100, description="Origin board, e.g. 'greenhouse'."
     )
 
+    # Optional structured fields (surfaced from discovery / manual ingestion)
+    source_job_id: Optional[str] = Field(None, max_length=255)
+    application_url: Optional[str] = Field(None, max_length=1024)
+    work_mode: Optional[str] = Field(None, max_length=50)
+    posted_date: Optional[str] = Field(None, max_length=100)
+    closing_date: Optional[str] = Field(None, max_length=100)
+    experience_requirement: Optional[str] = None
+    education_requirement: Optional[str] = None
+    required_skills: List[str] = Field(default_factory=list)
+    preferred_skills: List[str] = Field(default_factory=list)
+    eligibility: Optional[str] = None
+    compensation: Optional[str] = Field(None, max_length=512)
+
     @field_validator("title", "company", "location", "url", "source")
     @classmethod
     def _strip(cls, value: Optional[str]) -> Optional[str]:
@@ -51,6 +64,20 @@ class JobPostingRead(BaseModel):
     job_description: str
     url: str
     source: str
+
+    # Extended fields surfaced for the agent UI (embedding remains internal)
+    source_job_id: Optional[str] = None
+    application_url: Optional[str] = None
+    work_mode: Optional[str] = None
+    posted_date: Optional[str] = None
+    closing_date: Optional[str] = None
+    experience_requirement: Optional[str] = None
+    education_requirement: Optional[str] = None
+    required_skills: Optional[List[str]] = None
+    preferred_skills: Optional[List[str]] = None
+    eligibility: Optional[str] = None
+    compensation: Optional[str] = None
+
     created_at: Optional[datetime] = None
 
 

@@ -92,6 +92,17 @@ async def create_job(db: AsyncSession, payload: JobPostingCreate) -> JobPosting:
         job_description=payload.job_description,
         url=payload.url,
         source=payload.source,
+        source_job_id=payload.source_job_id,
+        application_url=payload.application_url,
+        work_mode=payload.work_mode,
+        posted_date=payload.posted_date,
+        closing_date=payload.closing_date,
+        experience_requirement=payload.experience_requirement,
+        education_requirement=payload.education_requirement,
+        required_skills=payload.required_skills or None,
+        preferred_skills=payload.preferred_skills or None,
+        eligibility=payload.eligibility,
+        compensation=payload.compensation,
     )
     db.add(job)
     await db.commit()

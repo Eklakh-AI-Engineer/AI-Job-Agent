@@ -1,7 +1,7 @@
 # Revised Implementation Plan - AI Job Agent
 
 **Last Updated:** 2026-10-06  
-**Status:** Phases 0–9 Complete ✅
+**Status:** Phases 0–9 + 9B Complete ✅
 
 ---
 
@@ -19,6 +19,7 @@
 | **Phase 7** | Application Workflow | ✅ **COMPLETE** |
 | **Phase 8** | Browser Automation | ✅ **COMPLETE** |
 | **Phase 9** | Dashboard (Frontend) | ✅ **COMPLETE** |
+| **Phase 9B** | Agent Experience / Product Differentiation | ✅ **COMPLETE** |
 | Phase 6 | Document Generation (Resume, Cover Letter, ATS) | ⏳ Pending |
 | Phase 7 | Application Workflow | ⏳ Pending |
 | Phase 8 | Browser Automation | ⏳ Pending |
@@ -1046,6 +1047,168 @@ frontend/
         ├── api.ts                          # Typed API client (NEW)
         ├── types.ts                        # API types (NEW)
         └── auth.tsx                        # Auth context (NEW)
+```
+
+---
+
+## Phase 9B: Agent Experience / Product Differentiation - COMPLETED ✅
+
+**Goal:** make the existing intelligence visible and agentic — no new backend
+capability. Success criterion: a new user understands within 30 seconds that
+JobAgent is an AI career agent, not a job board.
+
+### 9B.1 Agent Command Center ✅ (rebuilt `/dashboard`)
+- Agent hero with live presence ("the agent is scanning your pipeline…")
+- Daily summary: discovered today, strong-fit roles, awaiting review, ready to submit
+- Action Center, top recommendations, agent activity, pipeline breakdown
+
+### 9B.2 Intelligent Opportunity Feed ✅ (`/opportunities`)
+- Buckets: **Recommended / Worth reviewing / Low fit / All**
+- Ranked by actual fit (deterministic client-side pre-score of candidate skills
+  vs. required/preferred skills, alias-aware; falls back to description inference)
+- Per-role: fit ring, "why you" matched chips, gaps; Analyze / Track / Posting
+
+### 9B.3 Explainable Job Intelligence ✅
+- `MatchBreakdown`: fit ring + priority/recommendation, match-signal bars
+  (Technical, Role, Eligibility, Evidence), **Why you / Gaps / Risks**
+
+### 9B.4 Agent Activity Timeline ✅ (`/activity`)
+- Discovery → Matching → Documents → Approval → Application, built from **real**
+  timestamps and application audit events (nothing simulated)
+- Stage filters + counts
+
+### 9B.5 AI Application Copilot ✅ (`/copilot`)
+- Guided stepper: Choose → Analyze → Resume → Cover letter → Review & apply
+- One workflow instead of separate CRUD screens; inline document previews
+
+### 9B.6 Human-in-the-Loop ✅
+- The agent recommends; the user approves/edits/rejects
+- Submission requires an approved resume + application approval; dry-run first
+- Copilot checklist makes the gate explicit; **never silently submits**
+
+### 9B.7 Smart Document Workspace ✅ (rebuilt `/documents`)
+- Tabs: Preview · **Why this doc** · Versions
+- Shows ATS score, matched/missing requirements, evidence used (claim IDs),
+  and full version history
+
+### 9B.8 Action Center ✅
+- Prioritized "what needs you next": documents awaiting review, applications
+  ready to submit, matches needing approval, recommended opportunities
+
+### 9B.9 Natural-Language Career Assistant ✅
+- `IntentComposer` on Opportunities: e.g. *"AI Engineer roles in UAE with strong
+  Python/LLM fit"*
+- `parseIntent` extracts roles, locations, work mode, skills → search + rank,
+  and shows an **"Understood:"** chip summary
+
+### 9B.10 Product Identity ✅
+- Agentic navigation (Command Center, Opportunities, Copilot, Document
+  Workspace, Applications, Agent Activity, Candidate Profile)
+- Reasoning-first layouts, agent presence, fit rings, timelines
+
+### 9B.11 Supporting changes ✅
+- **Backend (surface existing data only):** `JobPostingRead`/`JobPostingCreate`
+  now expose already-stored extended fields (skills, work_mode, application_url,
+  etc.); `job_service.create_job` persists them. Embedding still internal.
+- **Agent lib:** `lib/agent.ts` (skill matching, pre-scoring, intent parsing,
+  action derivation, timeline), `lib/useAgentData.ts` (shared loader)
+- **Components:** `components/agent.tsx` (AgentAvatar, FitRing, MatchBreakdown,
+  ActionCenter, ActivityTimeline, IntentComposer, Stepper)
+
+### 9B.12 Verification ✅
+- `tsc --noEmit` → clean
+- `next build` → **10 routes** (`/dashboard`, `/opportunities`, `/copilot`,
+  `/documents`, `/applications`, `/activity`, `/profile`, `/login`,
+  `/register`, `/`)
+- `eslint src` → **0 errors** (7 documented warnings)
+- Backend suite → **226 passed**
+
+### 9B.13 Bug fix: Candidate KB save shape (canonical serialization) ✅
+**Problem:** the Profile editor emitted `skills`/`claims` as bare arrays (should
+be mappings), and later emitted bare *strings* (`"Python"`, `"RAG"`) where the
+backend expects full record objects (`SkillRecord`, `ClaimRecord`,
+`WorkExperienceRecord`, `ProjectRecord`). `PUT /api/v1/profile/kb` returned 422.
+
+**Fix:** pure module `frontend/src/lib/kb.ts`:
+- `canonicalizeSkills/Claims/Experience/Preferences`:
+  - wrap bare arrays in the correct mapping,
+  - **coerce bare strings into the exact record schema** (with unique
+    `SKILL-AUTO-n` / `CLAIM-AUTO-n` / `EXP-AUTO-n` / `PROJ-AUTO-n` ids that
+    avoid collisions with user ids, `verified: false`,
+    `disclosure: "undetermined"`, empty reference lists),
+  - preserve already-canonical record objects unchanged.
+- `buildCandidateKB(profile, advanced)` → canonical KB for save
+- `serializeAdvanced(kb)` → canonical JSON for the editor
+- Profile `onSave` resyncs the editor from the validated response, so coerced
+  strings visibly become records.
+
+**Regression tests:**
+- Frontend: `frontend/tests/kb.test.mjs` (**20 tests**, `npm test` →
+  `node --test`): mapping wrapping, **string → record coercion** (skills,
+  claims, experience, projects), id-collision avoidance, duplicate-string
+  uniqueness, canonical-object preservation (reference identity), profile
+  coercion, full round trip.
+- Backend: 7 new tests in `tests/unit/test_candidate_kb_service.py`, including
+  one that validates the **exact frontend-coerced record shapes** and asserts
+  bare-array collections are rejected.
+
+**Result:** backend **233 passed**; frontend `node --test` 20 passed;
+`next build` clean; `eslint` 0 errors.
+
+### 9B.14 Candidate Profile rebuilt as a structured profile builder ✅
+**Goal:** a polished career-product profile builder — the Advanced JSON editor
+is gone; users never touch JSON.
+
+**Mapping layer** (`frontend/src/lib/kb.ts`, backend schema unchanged):
+- New `ProfileForm` model + `formToCandidateKB()` / `candidateKBToForm()`:
+  - **Skills** — names → `SkillRecord` objects
+  - **Claims** — text + related skills → `ClaimRecord` (title derived from text)
+  - **Experience** — cards → `WorkExperienceRecord`; the free-text description
+    is stored as a linked `EXP-CLAIM-<id>` claim and reconstructed on load
+  - **Projects** — cards → `ProjectRecord` (`skills_used`, `verification_source`)
+  - **Preferences** — work modes, locations, relocation, visa, compensation,
+    exclusions → `CandidatePreferences` + `work_authorization`
+  - **Target roles** — approved taxonomy persisted; custom roles shown
+    (local-only, clearly labelled)
+  - Legacy migration: bare-string skills/claims and old shapes are recovered
+- `validateProfileForm()` — inline validation (name, email, roles, numbers)
+
+**UI** (`frontend/src/app/(app)/profile/page.tsx` + `components/forms.tsx`):
+- 7 sections: Identity & Education · Target Roles · Skills · Work Experience ·
+  Projects · Claims & Achievements · Work Preferences
+- Reusable `ChipInput` (type + Enter, removable chips), `Section`, `RepeatCard`
+- Add/remove controls, inline errors, prominent Save/Validate, clear
+  "Saved as version X" state, responsive, existing blue/slate system
+
+**Tests:** `frontend/tests/kb.test.mjs` → **31 tests** (added: skills/claims/
+experience/projects/preferences serialization, form↔KB round trip,
+load→edit→save→load, legacy migration, validation).
+
+**Result:** backend **233 passed**; frontend **31 passed**; `tsc` clean;
+`next build` clean; `eslint` 0 errors.
+
+---
+
+## New/Changed Files in Phase 9B
+
+```
+frontend/src/
+├── lib/
+│   ├── agent.ts                          # Intelligence helpers (NEW)
+│   └── useAgentData.ts                   # Shared data + derived state (NEW)
+├── components/
+│   ├── agent.tsx                         # Agent UI kit (NEW)
+│   └── icons.tsx                         # + Activity, Copilot (MODIFIED)
+├── app/(app)/
+│   ├── dashboard/page.tsx                # Command Center (REBUILT)
+│   ├── opportunities/page.tsx            # Intelligent feed + NL (NEW)
+│   ├── copilot/page.tsx                  # Guided workflow (NEW)
+│   ├── activity/page.tsx                 # Activity timeline (NEW)
+│   ├── documents/page.tsx                # Document Workspace (REBUILT)
+│   └── jobs/                             # REMOVED (replaced by opportunities)
+backend/app/
+├── schemas/job.py                        # Surface extended fields (MODIFIED)
+└── services/job_service.py               # Persist extended fields (MODIFIED)
 ```
 
 ---

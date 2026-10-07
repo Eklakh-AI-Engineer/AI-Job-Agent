@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Protocol
 
 from app.agents.ats_config import ATSConfig, resolve_ats
+from app.core.ssrf import validate_public_url
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +159,7 @@ class PlaywrightFormFiller:
                 error=f"playwright not installed: {exc}",
             )
 
+        validate_public_url(request.apply_url)
         ats = request.ats
         applicant = request.applicant
         fields_filled: Dict[str, str] = {}

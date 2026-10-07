@@ -81,6 +81,7 @@ async def bulk_upsert_jobs(db: AsyncSession, payloads: List[JobDiscoveryCreate])
 
     values = []
     for p in payloads:
+        normalized = normalize_job_requirements(p.model_dump())
         values.append({
             "title": p.title,
             "company": p.company,
@@ -101,12 +102,12 @@ async def bulk_upsert_jobs(db: AsyncSession, payloads: List[JobDiscoveryCreate])
             "compensation": p.compensation,
             "internship_information": p.internship_information,
             "raw_source_reference": p.raw_source_reference,
-            "normalized_required_skills": normalize_job_requirements(p.model_dump())["required_skills"],
-            "normalized_preferred_skills": normalize_job_requirements(p.model_dump())["preferred_skills"],
-            "experience_min_years": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["experience"]["min_years"],
-            "experience_max_years": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["experience"]["max_years"],
-            "education_level": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["education"]["level"],
-            "education_fields": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["education"]["fields"],
+            "normalized_required_skills": normalized["required_skills"],
+            "normalized_preferred_skills": normalized["preferred_skills"],
+            "experience_min_years": normalized["normalization"]["fields"]["experience"]["min_years"],
+            "experience_max_years": normalized["normalization"]["fields"]["experience"]["max_years"],
+            "education_level": normalized["normalization"]["fields"]["education"]["level"],
+            "education_fields": normalized["normalization"]["fields"]["education"]["fields"],
             "jd_normalization_version": "jd-normalization-v1",
             "jd_normalization_status": "normalized",
         })

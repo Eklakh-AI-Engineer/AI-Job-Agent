@@ -74,6 +74,17 @@ jobs:
       - name: Audit backend requirements
         run: pip-audit -r backend/requirements.txt --no-deps
 
+  benchmark-validation:
+    name: Validate ranking benchmark structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate benchmark
+        run: |
+          python scripts/validate_benchmark.py \
+            docs/evaluation/golden_job_ranking_v1.jsonl \
+            --manifest /tmp/benchmark-manifest.json
+
   evaluation-gate:
     name: Ranking regression gate
     runs-on: ubuntu-latest

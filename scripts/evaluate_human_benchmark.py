@@ -68,11 +68,10 @@ def as_label(value: Any) -> int:
 def canonical_query_id(value: Any) -> str:
     """Normalize an encoded evaluation identifier into a query group when possible."""
     text = str(value or "").strip()
-    match = re.search(r"(?:^|[-_ ])(?:query|q)[-_ ]*(\\d+)(?:[-_ ]|$)", text, re.I)
+    match = re.search(r"(?:^|[-_ ])(?:query|q)[-_ ]*(\d+)(?:[-_ ]|$)", text, re.I)
     if match:
         return f"Q-{int(match.group(1)):03d}"
-    return text
-def as_float(value: Any) -> float | None:
+    return text\n\ndef as_float(value: Any) -> float | None:
     if value is None or str(value).strip() == "":
         return None
     try:

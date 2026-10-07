@@ -172,12 +172,12 @@ Remaining structured-field normalization is intentionally handled by P1.2 so exp
 
 ## P1.2 Normalize and validate extracted requirements
 
-- [ ] Normalize skill aliases into canonical skills.
-- [ ] Preserve original wording for evidence.
-- [ ] Distinguish explicit requirements from inferred/uncertain information.
-- [ ] Validate dates, experience ranges and education fields.
-- [ ] Add extraction confidence/status metadata where appropriate.
-- [ ] Add regression fixtures for malformed and incomplete JDs.
+- [x] Normalize skill aliases into canonical skills.
+- [x] Preserve original wording for evidence.
+- [x] Distinguish explicit requirements from inferred/uncertain information.
+- [x] Validate dates, experience ranges and education fields.
+- [x] Add extraction confidence/status metadata where appropriate.
+- [x] Add regression fixtures for malformed and incomplete JDs.
 
 **Acceptance:** evaluator/search receives structured, provenance-aware requirements rather than raw scraper output.
 
@@ -212,8 +212,10 @@ Implemented as `backend/evaluation/hybrid_ranker.py`.
 - [x] Document and version every hybrid-ranking weight.
 - [x] Add regression tests for ranking primitives.
 - [x] Keep hard eligibility rejection separate from soft ranking.
+- [x] Add versioned post-hoc sigmoid calibration implementation for raw ranking scores.
+- [ ] Fit empirical calibration coefficients from independently human-labelled jobs.
 
-**Acceptance:** no production ranking component is an unexplained constant.
+**Acceptance:** no production ranking component is an unexplained constant; calibrated probabilities are only promoted after independent labels exist.
 
 ---
 
@@ -221,16 +223,14 @@ Implemented as `backend/evaluation/hybrid_ranker.py`.
 
 ## P3.1 Create the golden evaluation dataset
 
-A 50-query × 5-candidate **provisional** benchmark now exists at `docs/evaluation/golden_job_ranking_v1.jsonl`. It is deliberately not marked complete because the repository does not yet contain a sufficiently large real persisted corpus and the cases are not human-verified. See `docs/evaluation/README.md` for the promotion procedure.
+A 50-query × 5-candidate **benchmark fixture** now exists at `docs/evaluation/benchmark_job_ranking_v1.jsonl`. It is reproducible and provenance-tagged, but deliberately not called human-gold because its labels are machine-generated from fixture archetypes. See `docs/evaluation/README.md` for the promotion procedure.
 
 Target:
 
-- [ ] 50–100 representative jobs/queries.
-- [ ] Gold relevance labels.
-- [ ] Gold matched skills.
-- [ ] Gold missing skills.
-- [ ] Gold eligibility outcomes.
-- [ ] Gold preferred-job ordering where possible.
+- [x] 50-query × 5-candidate benchmark fixture (250 labelled pairs) with provenance and difficult-negative metadata.
+- [ ] Human-gold relevance labels on real persisted/discovered jobs.
+- [ ] Human-gold matched/missing skills.
+- [ ] Human-gold eligibility outcomes.
 - [ ] Human rationale/evidence references.
 
 Include difficult cases:
@@ -261,12 +261,13 @@ Include difficult cases:
 
 ## P3.3 Add regression evaluation
 
-- [ ] Create a reproducible evaluation command.
-- [ ] Store dataset version.
-- [ ] Store model/config version.
-- [ ] Store metric output.
-- [ ] Fail CI when critical metrics regress beyond defined thresholds.
-- [ ] Publish evaluation results in `docs/evaluation/`.
+- [x] Create a reproducible evaluation command.
+- [x] Store dataset version and SHA-256.
+- [x] Store ranking/config version.
+- [x] Store metric output.
+- [x] Fail CI when frozen benchmark metrics regress beyond defined thresholds.
+- [x] Publish regression configuration and evaluation documentation in `docs/evaluation/`.
+- [ ] Publish production-quality metrics from an independently human-gold corpus.
 
 **Acceptance:** matching improvements can be measured instead of judged only by screenshots or manual inspection.
 
@@ -393,14 +394,12 @@ The frontend implementation is preserved and its build/test toolchain is now a r
 
 - [x] Frontend build, lint, typecheck and unit tests are CI-gated.
 - [x] Candidate KB helper tests are present.
-- [ ] Verify every frontend API call against live backend endpoints.
-- [ ] Verify authentication expiry/401 behavior in browser QA.
-- [ ] Verify loading/empty/error states against live responses.
-- [ ] Verify candidate KB save/load round trip against a running backend.
-- [ ] Verify evaluation display against real ranking responses.
-- [ ] Verify document generation/approval workflow end-to-end.
-- [ ] Verify application dry-run and approval gates in browser UI.
-- [ ] Record a browser-level smoke run for the primary supported viewport.
+- [x] Add a Playwright live-integration suite that exercises the browser against a running backend.
+- [x] Cover authenticated `/users/me`, jobs, documents, applications and profile routes in the live suite.
+- [x] Cover unauthenticated 401 behavior in the live API contract.
+- [x] Cover route transitions and frontend-to-backend request status assertions.
+- [ ] Execute the live browser suite against the target deployed/staging environment and archive the report.
+- [ ] Extend the live fixture with real ranking responses, document approval and safe dry-run application assertions.
 
 **Acceptance:** critical frontend workflows are backed by live API behavior, not only compile-time checks.
 
@@ -497,8 +496,9 @@ AI Job Agent can be called **v1 validated** only when all of the following are t
 - [ ] Real job discovery works for the documented supported sources.
 - [ ] Full JD extraction works for supported sources.
 - [ ] Candidate/job matching is measurable.
-- [ ] Golden evaluation set exists.
-- [ ] Ranking metrics are published.
+- [x] Versioned 50-query benchmark fixture exists.
+- [ ] Human-gold evaluation set exists.
+- [ ] Production ranking metrics are published.
 - [ ] No placeholder scoring remains in production ranking.
 
 ### Documents
@@ -520,8 +520,8 @@ AI Job Agent can be called **v1 validated** only when all of the following are t
 ### Product
 
 - [ ] Frontend builds in CI.
-- [ ] Critical frontend workflows hit real backend APIs.
-- [ ] E2E smoke test passes.
+- [x] Live frontend QA harness hits real backend APIs.
+- [ ] Target-environment frontend E2E smoke test passes.
 
 ### Engineering
 

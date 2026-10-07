@@ -1,0 +1,134 @@
+name: Frontend Live Integration QA
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**", "backend/**", "alembic/**", ".github/workflows/frontend-live-qa.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["frontend/**", "backend/**", "alembic/**", ".github/workflows/frontend-live-qa.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-integration:
+    name: Browser QA against ephemeral backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: aijobagent
+          POSTGRES_DB: aijobagent
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U aijobagent -d aijobagent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    env:
+      APP_ENV: development
+      APP_DEBUG: "true"
+      DATABASE_URL: postgresql+asyncpg://aijobagent@127.0.0.1:5434/aijobagent
+      REDIS_URL: redis://127.0.0.1:6379/0
+      CELERY_BROKER_URL: redis://127.0.0.1:6379/1
+      CELERY_RESULT_BACKEND: redis://127.0.0.1:6379/2
+      SECRET_KEY: frontend-live-qa-secret
+      JWT_SECRET: frontend-live-qa-jwt
+      CORS_ORIGINS: http://127.0.0.1:3000
+      PYTHONPATH: ${{ github.workspace }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Apply database migrations
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          nohup python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/ai-job-agent-backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/ai-job-agent-backend.log
+          exit 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright test runner
+        working-directory: frontend
+        run: npm install --no-save @playwright/test@1.63.0
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
+        run: npm run build
+
+      - name: Start frontend
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
+        run: |
+          nohup npm start -- -p 3000 > /tmp/ai-job-agent-frontend.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000 >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/ai-job-agent-frontend.log
+          exit 1
+
+      - name: Run live browser QA
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:3000
+          PLAYWRIGHT_API_URL: http://127.0.0.1:8000
+        run: npx playwright test
+
+      - name: Upload browser QA artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-live-qa-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+            /tmp/ai-job-agent-backend.log
+            /tmp/ai-job-agent-frontend.log
+          retention-days: 14

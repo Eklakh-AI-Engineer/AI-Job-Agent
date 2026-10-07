@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test"
+    "test": "node --test",
+    "test:live": "node --test tests/live-api.test.mjs",
+    "test:live:frontend": "node --test tests/live-frontend.test.mjs"
   },
   "dependencies": {
     "next": "16.2.12",

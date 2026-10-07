@@ -43,6 +43,7 @@ class JobPostingCreate(BaseModel):
     eligibility: Optional[str] = None
     compensation: Optional[str] = Field(None, max_length=512)
     internship_information: Optional[str] = None
+    raw_source_reference: Optional[dict] = None
 
     @field_validator("title", "company", "location", "url", "source")
     @classmethod

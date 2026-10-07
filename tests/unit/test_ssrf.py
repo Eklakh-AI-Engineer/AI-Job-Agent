@@ -24,3 +24,7 @@ def test_rejects_url_userinfo():
 
 def test_accepts_public_example():
     assert validate_public_url("https://example.com/jobs") == "https://example.com/jobs"
+
+
+def test_allows_loopback_only_when_explicitly_enabled():
+    assert validate_public_url("http://127.0.0.1:8000/health", allow_loopback=True).startswith("http://127.0.0.1")

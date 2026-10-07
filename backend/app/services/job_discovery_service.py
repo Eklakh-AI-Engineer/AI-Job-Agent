@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.job import JobPosting
 from app.schemas.job_discovery import JobDiscoveryCreate
 from app.services.errors import JobAlreadyExistsError
+from app.services.jd_normalization import normalize_job_requirements
 
 
 async def create_job_from_discovery(db: AsyncSession, payload: JobDiscoveryCreate) -> JobPosting:
@@ -32,6 +33,7 @@ async def create_job_from_discovery(db: AsyncSession, payload: JobDiscoveryCreat
     if existing is not None:
         raise JobAlreadyExistsError("A job posting with this URL already exists")
 
+    normalized = normalize_job_requirements(payload.model_dump())
     job = JobPosting(
         title=payload.title,
         company=payload.company,
@@ -52,6 +54,14 @@ async def create_job_from_discovery(db: AsyncSession, payload: JobDiscoveryCreat
         compensation=payload.compensation,
         internship_information=payload.internship_information,
         raw_source_reference=payload.raw_source_reference,
+        normalized_required_skills=normalized["required_skills"],
+        normalized_preferred_skills=normalized["preferred_skills"],
+        experience_min_years=normalized["normalization"]["fields"]["experience"]["min_years"],
+        experience_max_years=normalized["normalization"]["fields"]["experience"]["max_years"],
+        education_level=normalized["normalization"]["fields"]["education"]["level"],
+        education_fields=normalized["normalization"]["fields"]["education"]["fields"],
+        jd_normalization_version=normalized["normalization"]["version"],
+        jd_normalization_status=normalized["normalization"]["status"],
     )
     db.add(job)
     await db.commit()
@@ -91,6 +101,14 @@ async def bulk_upsert_jobs(db: AsyncSession, payloads: List[JobDiscoveryCreate])
             "compensation": p.compensation,
             "internship_information": p.internship_information,
             "raw_source_reference": p.raw_source_reference,
+            "normalized_required_skills": normalize_job_requirements(p.model_dump())["required_skills"],
+            "normalized_preferred_skills": normalize_job_requirements(p.model_dump())["preferred_skills"],
+            "experience_min_years": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["experience"]["min_years"],
+            "experience_max_years": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["experience"]["max_years"],
+            "education_level": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["education"]["level"],
+            "education_fields": normalize_job_requirements(p.model_dump())["normalization"]["fields"]["education"]["fields"],
+            "jd_normalization_version": "jd-normalization-v1",
+            "jd_normalization_status": "normalized",
         })
 
     # Use PostgreSQL upsert with ON CONFLICT DO NOTHING on URL

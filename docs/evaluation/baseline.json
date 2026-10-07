@@ -1,0 +1,15 @@
+{
+  "benchmark": "golden_job_ranking_v1",
+  "benchmark_status": "provisional",
+  "provenance": "fixture-order baseline; not a production ranking claim",
+  "query_groups": 50,
+  "candidates_per_group": 5,
+  "metrics": {
+    "precision_at_5": 1,
+    "recall_at_5": 1,
+    "ndcg_at_5": 1,
+    "mrr": 1
+  },
+  "generated_by": "scripts/evaluate_ranking.py default candidate order",
+  "note": "Infrastructure baseline only; replace after real persisted-job human adjudication and freeze."
+}

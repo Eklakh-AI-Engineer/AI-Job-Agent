@@ -1,0 +1,6 @@
+{
+  "precision_at_5": 0.02,
+  "recall_at_5": 0.02,
+  "ndcg_at_5": 0.02,
+  "mrr": 0.02
+}

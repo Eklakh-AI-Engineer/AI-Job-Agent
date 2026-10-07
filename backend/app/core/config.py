@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # In-cluster database host (Kubernetes service name)
     database_host_in_cluster: str = "postgres"
     database_port_in_cluster: int = 5432
+    use_in_cluster_database: bool = False
     redis_url: str = "redis://localhost:6379/0"
     celery_broker_url: str = "redis://localhost:6379/1"
     celery_result_backend: str = "redis://localhost:6379/2"
@@ -50,10 +51,11 @@ class Settings(BaseSettings):
         """
         Return the database URL appropriate for the current environment.
         
-        In Kubernetes (production), use the in-cluster service DNS.
-        In development, use the configured database_url (with host port mapping).
+        Use the configured DATABASE_URL by default, including managed
+        PostgreSQL such as Supabase. Kubernetes deployments may explicitly set
+        USE_IN_CLUSTER_DATABASE=true to use the internal postgres service.
         """
-        if self.is_production:
+        if self.is_production and self.use_in_cluster_database:
             parsed = urlparse(self.database_url)
             # Replace host and port with in-cluster values
             netloc = f"{parsed.username}:{parsed.password}@{self.database_host_in_cluster}:{self.database_port_in_cluster}"

@@ -1,30 +1,25 @@
-# Ranking Evaluation Dataset
+# Ranking Evaluation
 
-## v1 provisional benchmark
+## Benchmark lifecycle
 
-`golden_job_ranking_v1.jsonl` contains **50 query groups × 5 candidate jobs**.
+golden_job_ranking_v1.jsonl is currently a **provisional** 50-query × 5-candidate benchmark. It exercises the evaluation machinery but is not evidence of production ranking quality until promoted.
 
-Each group contains:
-- `query_id`
-- user-style job-search query
-- candidate job IDs
-- ordinal relevance labels (`0`–`3`)
-- provenance/status fields
+### Required promotion
 
-### Provenance rule
+1. Replace synthetic job IDs with real persisted/discovered jobs.
+2. Assign independent human relevance labels.
+3. Record rationale/evidence for difficult cases.
+4. Adjudicate disagreements.
+5. Freeze the dataset and record its SHA-256.
+6. Retain difficult negatives: keyword-overlap false positives, semantically similar but ineligible roles, missing mandatory requirements, related-role matches, noisy/incomplete JDs and preference conflicts.
+7. Record the ranking model/config version used for the baseline.
 
-The current repository does not contain 50 real persisted production jobs. The benchmark therefore uses the existing synthetic candidate fixture and synthetic job archetypes as a **provisional evaluation scaffold**.
+See `benchmark_status.json` for machine-readable lifecycle state.
 
-It is **not yet human-verified** and must not be presented as measured production quality.
+## Regression gate
 
-### Promotion to golden
+The repository contains `scripts/evaluate_ranking.py` for metrics and `scripts/ranking_regression_gate.py` for baseline comparison. `regression_policy.json` defines allowable degradation. `baseline.json` becomes authoritative once a human-verified benchmark is promoted.
 
-Before calling this dataset a true golden benchmark:
-1. replace synthetic job IDs with jobs from the actual persisted/discovered corpus;
-2. have a human reviewer label relevance independently;
-3. record reviewer rationale for difficult cases;
-4. adjudicate disagreements;
-5. freeze the resulting dataset with a version/hash;
-6. keep difficult negatives such as keyword-overlap false positives and semantically similar but ineligible roles.
+CI is conditional on benchmark status being `validated`; until then it reports the benchmark as provisional rather than pretending synthetic scores are production evidence.
 
-The evaluation runner in the next milestone consumes the same grouped format, so the provisional dataset can be replaced without changing metric code.
+Required metrics: `precision_at_5`, `recall_at_5`, `ndcg_at_5`, and `mrr`.

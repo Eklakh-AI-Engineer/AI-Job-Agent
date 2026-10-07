@@ -106,6 +106,7 @@ async def create_job(db: AsyncSession, payload: JobPostingCreate) -> JobPosting:
         eligibility=payload.eligibility,
         compensation=payload.compensation,
         internship_information=payload.internship_information,
+        raw_source_reference=payload.raw_source_reference,
         normalized_required_skills=normalized["required_skills"],
         normalized_preferred_skills=normalized["preferred_skills"],
         experience_min_years=normalized["normalization"]["fields"]["experience"]["min_years"],

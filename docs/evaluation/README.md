@@ -23,3 +23,5 @@ The repository contains `scripts/evaluate_ranking.py` for metrics and `scripts/r
 CI is conditional on benchmark status being `validated`; until then it reports the benchmark as provisional rather than pretending synthetic scores are production evidence.
 
 Required metrics: `precision_at_5`, `recall_at_5`, `ndcg_at_5`, and `mrr`.
+
+CI also runs Python and frontend runtime dependency vulnerability audits.

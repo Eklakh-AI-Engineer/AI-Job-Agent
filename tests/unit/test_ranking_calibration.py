@@ -1,14 +1,12 @@
-from backend.evaluation.calibration import calibrate, normalize_weights, mse
+from backend.evaluation.calibration import CALIBRATION_VERSION, fit_sigmoid
 
-def test_normalize_weights_sums_to_one():
-    weights=normalize_weights({"semantic":2,"technical":1})
-    assert abs(sum(weights.values())-1.0)<1e-9
 
-def test_calibration_is_deterministic():
-    rows=[]
-    for i in range(30):
-        strong=100.0 if i%2==0 else 10.0
-        rows.append({"features":{"semantic":strong,"technical":strong,"role":50,"experience":50,"education":50,"preference":50,"evidence":strong},"relevance":4 if i%2==0 else 0})
-    a=calibrate(rows); b=calibrate(rows)
-    assert a==b
-    assert mse(rows,a) <= mse(rows,normalize_weights({"semantic":.25,"technical":.30,"role":.15,"experience":.10,"education":.05,"preference":.10,"evidence":.05}))
+def test_sigmoid_calibrator_is_monotonic_and_bounded():
+    scores = [10, 20, 25, 30, 40, 50, 55, 60, 70, 80, 90, 95]
+    labels = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+    calibrator = fit_sigmoid(scores, labels)
+    values = [calibrator.probability(x) for x in scores]
+    assert calibrator.version == CALIBRATION_VERSION
+    assert all(0.0 <= value <= 1.0 for value in values)
+    assert values == sorted(values)
+    assert calibrator.score(70) > calibrator.score(50)

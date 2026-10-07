@@ -17,10 +17,13 @@ from typing import Optional
 
 import httpx
 
+from app.core.ssrf import validate_public_url
+
 logger = logging.getLogger(__name__)
 
 
 async def _send_webhook(url: str, payload: dict) -> None:
+    validate_public_url(url)
     async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.post(url, json=payload)
         response.raise_for_status()

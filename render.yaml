@@ -42,7 +42,7 @@ services:
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY
-        value: aijobagent-artifacts
+        sync: false
 
   - type: worker
     name: ai-job-agent-worker
@@ -77,11 +77,13 @@ services:
         value: text-embedding-3-small
       - key: PLAYWRIGHT_HEADLESS
         value: "true"
-      - key: S3_ENDPOINT_URL
+      - key: DOCUMENT_STORAGE_BACKEND
+        value: s3
+      - key: DOCUMENT_STORAGE_BUCKET
         sync: false
-      - key: S3_ACCESS_KEY
+      - key: DOCUMENT_STORAGE_ENDPOINT
         sync: false
-      - key: S3_SECRET_KEY
+      - key: AWS_ACCESS_KEY_ID
         sync: false
-      - key: S3_BUCKET
-        value: aijobagent-artifacts
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false

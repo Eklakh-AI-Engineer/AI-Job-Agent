@@ -1,127 +1,186 @@
 # AI Job Agent
 
-> AI-assisted career operating system for job discovery, candidate-job intelligence, application documents, and human-gated application workflows.
+> Engineering-first career operating system for job discovery, candidate↔job intelligence, document generation, and human-gated application workflows.
 
-## Current status
+## Release status
 
-The repository is substantially beyond the original backend-foundation milestone. Project claims use four states: **Implemented**, **Integrated**, **Validated**, and **Planned**.
+The repository is in the **v1 completion and validation phase**. The implementation is substantially complete; remaining work is primarily empirical validation against real data/environments.
 
 | Capability | Status |
 |---|---|
-| FastAPI /api/v1 backend | 🟢 Implemented / integrated |
+| FastAPI `/api/v1` backend | 🟢 Implemented |
 | PostgreSQL + pgvector | 🟢 Implemented |
-| Redis + Celery | 🟢 Implemented / integrated |
+| Redis + Celery | 🟢 Implemented |
 | Candidate Knowledge Base | 🟢 Implemented / integrated |
 | Greenhouse / Lever / Workday / Apify discovery | 🟢 Implemented |
-| Normalization / deduplication | 🟢 Implemented |
-| Complete JD extraction | 🔴 Pending |
-| Deterministic candidate-job evaluation | 🟢 Implemented |
-| Calibrated hybrid candidate-job ranking | 🔴 Pending |
-| Embeddings / semantic / hybrid search | 🟢 Implemented |
-| Resume / cover-letter workflow | 🟢 Implemented; PDF/DOCX pending |
+| Canonical `JobPosting` pipeline | 🟢 Implemented |
+| JD detail extraction | 🟢 Implemented |
+| Structured JD normalization + provenance | 🟢 Implemented |
+| Candidate-job deterministic evaluation | 🟢 Implemented |
+| Hybrid ranking + explanations | 🟢 Implemented |
+| Ranking calibration utility | 🟢 Implemented; empirical calibration pending |
+| 50-query benchmark infrastructure | 🟢 Implemented; human golden labels pending |
+| Ranking metrics | 🟢 Implemented |
+| Ranking regression gate | 🟢 Implemented; enforced after benchmark promotion |
+| Resume / cover-letter generation | 🟢 Implemented |
+| PDF / DOCX artifacts | 🟢 Implemented |
 | ATS analysis | 🟢 Implemented |
-| Application lifecycle + audit | 🟢 Implemented |
-| Playwright ATS automation | 🟢 Implemented / unit-tested |
-| Controlled ATS E2E validation | 🔴 Pending |
-| Next.js frontend | 🟢 Implemented / integrated |
-| Full product E2E | 🔴 Pending |
-| Complete CI release gate | 🟠 Pending |
-| Prometheus metrics | 🟢 Implemented |
-| Grafana / tracing / production hardening | 🟠 Pending |
+| Human approval gate | 🟢 Implemented |
+| Mock ATS E2E | 🟢 Implemented |
+| Backend true-pipeline E2E | 🟢 Implemented |
+| Frontend build/type/unit CI | 🟢 Implemented |
+| Frontend live integration smoke tests | 🟢 Implemented; live execution pending |
+| SSRF / upload security controls | 🟢 Implemented |
+| Prometheus + structured logging | 🟢 Implemented |
+| Production deployment configuration | 🟢 Implemented for Vercel + Render + Supabase topology |
+| Real ATS dry-run evidence | 🟠 Requires live browser execution |
+| Human-verified ranking benchmark | 🟠 Requires human review |
+| Production deployment | 🟠 Requires external service credentials |
 
-**Current source of truth for remaining work:** [PENDING_IMPLEMENTATION_PLAN.md](PENDING_IMPLEMENTATION_PLAN.md).
+**Important:** source code being present is not treated as validation. A capability is considered validated only when its tests, failure paths, runtime evidence and documentation agree.
 
 ## Architecture
 
 ```text
-Job Sources: Greenhouse / Lever / Workday / Apify
-                    |
-                    v
-         Discovery + normalization
-                    |
-                    v
-             JobPosting storage
-                    |
-          +---------+----------+
-          |                    |
-          v                    v
-   Requirements/eval     Embeddings/search
-          |                    |
-          +---------+----------+
-                    |
-                    v
-             Candidate KB
-               /       \
-              v         v
-       Documents     Applications
-       + ATS         + audit
-                    |
-                    v
-                 Next.js
+                         Vercel / Next.js
+                               |
+                               v
+                        Render / FastAPI
+                               |
+             +-----------------+------------------+
+             |                 |                  |
+             v                 v                  v
+       Supabase DB          Redis             Storage
+       PostgreSQL           / Celery          S3-compatible
+       + pgvector              |              artifacts
+             |                 v
+             |          Background workers
+             |                 |
+             +--------+--------+
+                      |
+                      v
+              Job discovery / JD extraction
+                      |
+                      v
+                Canonical JobPosting
+                      |
+             +--------+---------+
+             |                  |
+             v                  v
+       Candidate KB        Retrieval/search
+             |                  |
+             +--------+---------+
+                      v
+               Hybrid ranking
+                      |
+             +--------+---------+
+             |                  |
+             v                  v
+        Documents          Explanations
+             |
+             v
+       Human approval gate
+             |
+             v
+       ATS dry-run / submission
+             |
+             v
+          Outcomes
+             |
+             v
+       Evaluation + regression gate
 ```
 
-This describes the current implementation boundary, not a claim that every path is production-grade or end-to-end validated. Complete JD extraction, canonical job-pipeline cleanup, calibrated ranking, professional PDF/DOCX artifacts, controlled ATS E2E, and the full CI release gate remain pending.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for implementation boundaries and [docs/deployment/VERCEL_RENDER_SUPABASE.md](docs/deployment/VERCEL_RENDER_SUPABASE.md) for production topology.
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+## Evaluation
 
-## Technology
+The repository contains a reproducible ranking evaluation stack:
 
-- Python, FastAPI, SQLAlchemy, PostgreSQL, pgvector
-- Redis, Celery, Alembic, pytest, Playwright
-- Next.js 16, React 19, TypeScript, Tailwind CSS v4
-- Prometheus, Docker / Docker Compose, GitHub Actions, CodeQL
+- `docs/evaluation/golden_job_ranking_v1.jsonl` — provisional 50-query benchmark;
+- `scripts/evaluate_ranking.py` — metric runner;
+- `scripts/validate_benchmark.py` — structural validation and SHA-256 fingerprinting;
+- `scripts/ranking_regression_gate.py` — baseline/threshold enforcement;
+- `backend/evaluation/calibration.py` — deterministic weight-calibration implementation;
+- `docs/evaluation/benchmark_status.json` — benchmark lifecycle state.
 
-See [docs/TECH_STACK.md](docs/TECH_STACK.md).
+The benchmark is **not** called golden until real jobs are human-reviewed, disagreements are adjudicated, and the dataset is frozen with a recorded hash.
 
-## Local development
+## Verification
+
+Backend:
 
 ```bash
-git clone https://github.com/Eklakh-AI-Engineer/AI-Job-Agent.git
-cd AI-Job-Agent
-cp .env.example .env
-docker compose up -d --build
 pytest
+pytest -m postgres tests/integration_pg
 ```
 
 Frontend:
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm test
 npm run lint
 npm run build
 ```
 
-See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+Live integration:
 
-## Verification evidence
+```bash
+LIVE_API_URL=https://api.example.com npm run test:live
+FRONTEND_URL=https://app.example.com npm run test:live:frontend
+```
 
-Previously recorded development evidence includes **233 backend tests** and **31 frontend regression tests**, plus successful TypeScript/build checks. These are historical evidence, not a claim of fresh execution for this documentation commit.
+The primary CI workflow also runs the true pipeline E2E, benchmark structure validation, dependency auditing, frontend build gates and the conditional ranking regression gate.
+
+## Security boundary
+
+- Authentication and authorization are enforced at the API layer.
+- Production secrets and wildcard CORS are rejected at startup.
+- Authentication endpoints are rate-limited.
+- Server-side browser/HTTP URL fetches reject private/local destinations.
+- External document uploads are restricted to validated PDF/DOCX artifacts.
+- External application submission remains explicitly approval-gated.
+- Job-board content is treated as untrusted input.
+- CodeQL and dependency-review/pip-audit checks are part of the repository security workflow.
+
+See [docs/SECURITY.md](docs/SECURITY.md).
+
+## Deployment
+
+The intended low-cost portfolio deployment is:
+
+- **Vercel** — Next.js frontend;
+- **Render** — FastAPI web service + Celery worker;
+- **Supabase** — PostgreSQL + pgvector + Storage;
+- **Managed Redis** — broker/result backend.
+
+The repository includes `render.yaml` and deployment documentation. Production secrets and service-specific credentials must be configured outside Git.
+
+## Engineering principles
+
+1. **Truthful scope** — distinguish implemented, integrated, validated and pending.
+2. **Auditable evidence** — preserve source evidence and ranking explanations.
+3. **Human control** — external submission remains approval-gated.
+4. **Reproducibility** — tests, migrations, benchmarks and configuration are versioned.
+5. **No fabricated candidate claims** — generated documents stay constrained by candidate evidence.
+6. **Regression enforcement** — ranking changes must be measurable before they become release candidates.
 
 ## Documentation
 
 | Document | Purpose |
 |---|---|
-| [Pending implementation plan](PENDING_IMPLEMENTATION_PLAN.md) | Current remaining-work source of truth |
-| [Architecture](docs/ARCHITECTURE.md) | Current implementation boundary |
-| [Development](docs/DEVELOPMENT.md) | Setup and testing |
-| [Tech stack](docs/TECH_STACK.md) | Implemented vs planned technology |
-| [Roadmap](docs/ROADMAP.md) | Milestones and remaining evolution |
-| [Security](docs/SECURITY.md) | Security and responsible automation |
-| [API reference](docs/10_API/) | API contracts |
+| [Architecture](docs/ARCHITECTURE.md) | Current system boundaries |
+| [Development](docs/DEVELOPMENT.md) | Local setup and test commands |
+| [Evaluation](docs/evaluation/README.md) | Ranking benchmark and regression process |
+| [Frontend live QA](docs/testing/FRONTEND_LIVE_QA.md) | Live integration checklist |
+| [Deployment](docs/deployment/VERCEL_RENDER_SUPABASE.md) | Vercel/Render/Supabase topology |
+| [Security](docs/SECURITY.md) | Security boundary and controls |
+| [Pending implementation plan](PENDING_IMPLEMENTATION_PLAN.md) | Remaining validation work |
 
-The older Revised implementation plan is retained as a historical implementation record. Specifications in the numbered docs directories are not proof of runtime implementation.
-
-## Engineering principles
-
-1. Truthful scope: distinguish implemented, integrated, validated and planned work.
-2. Auditable evidence: preserve source and candidate evidence.
-3. Human control: external submission remains approval-gated.
-4. Reproducibility: tests, migrations, evaluation and configuration should be repeatable.
-5. No fabricated candidate claims.
-6. Incremental autonomy: automate only after supporting contracts are tested.
+Historical audit and implementation-plan documents are retained under their historical paths and are not the current source of truth.
 
 ## License
 
-Licensed under the MIT License.
+MIT

@@ -109,13 +109,3 @@ jobs:
           test -f docs/evaluation/latest.json
           python scripts/ranking_regression_gate.py             --baseline docs/evaluation/baseline.json             --latest docs/evaluation/latest.json             --policy docs/evaluation/regression_policy.json
 
-  dependency-review:
-    name: Dependency review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4

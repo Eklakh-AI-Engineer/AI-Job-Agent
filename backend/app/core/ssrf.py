@@ -17,8 +17,10 @@ class UnsafeURL(ValueError):
     """Raised when a URL targets a disallowed destination."""
 
 
-def _is_public_ip(value: str) -> bool:
+def _is_public_ip(value: str, *, allow_loopback: bool = False) -> bool:
     ip = ipaddress.ip_address(value)
+    if allow_loopback and ip.is_loopback:
+        return True
     return not (
         ip.is_private
         or ip.is_loopback
@@ -29,7 +31,7 @@ def _is_public_ip(value: str) -> bool:
     )
 
 
-def validate_public_url(url: str) -> str:
+def validate_public_url(url: str, *, allow_loopback: bool = False) -> str:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"}:
         raise UnsafeURL("Only http and https URLs are allowed")
@@ -41,7 +43,8 @@ def validate_public_url(url: str) -> str:
 
     lowered = hostname.rstrip(".").casefold()
     if lowered in {"localhost", "localhost.localdomain"} or lowered.endswith(".localhost"):
-        raise UnsafeURL("Localhost destinations are not allowed")
+        if not allow_loopback:
+            raise UnsafeURL("Localhost destinations are not allowed")
 
     try:
         addresses = {
@@ -51,7 +54,7 @@ def validate_public_url(url: str) -> str:
     except socket.gaierror as exc:
         raise UnsafeURL(f"Could not resolve URL host: {hostname}") from exc
 
-    if not addresses or not all(_is_public_ip(address) for address in addresses):
+    if not addresses or not all(_is_public_ip(address, allow_loopback=allow_loopback) for address in addresses):
         raise UnsafeURL("URL resolves to a non-public network address")
 
     return url

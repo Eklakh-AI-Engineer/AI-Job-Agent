@@ -1,6 +1,6 @@
 # Pending Implementation Plan — AI Job Agent
 
-**Last updated:** 2026-10-06  
+**Last updated:** 2026-10-07  
 **Repository:** `Eklakh-AI-Engineer/AI-Job-Agent`  
 **Branch:** `main`  
 **Purpose:** Single source of truth for work that is still required to move AI Job Agent from a feature-rich implementation to a validated, reproducible v1 release.
@@ -172,12 +172,12 @@ Remaining structured-field normalization is intentionally handled by P1.2 so exp
 
 ## P1.2 Normalize and validate extracted requirements
 
-- [ ] Normalize skill aliases into canonical skills.
-- [ ] Preserve original wording for evidence.
-- [ ] Distinguish explicit requirements from inferred/uncertain information.
-- [ ] Validate dates, experience ranges and education fields.
-- [ ] Add extraction confidence/status metadata where appropriate.
-- [ ] Add regression fixtures for malformed and incomplete JDs.
+- [x] Normalize skill aliases into canonical skills.
+- [x] Preserve original wording for evidence.
+- [x] Distinguish explicit source requirements from inferred/uncertain information.
+- [x] Validate dates, experience ranges and education fields.
+- [x] Add normalization confidence/status/provenance metadata.
+- [x] Add regression fixtures for malformed and incomplete JDs.
 
 **Acceptance:** evaluator/search receives structured, provenance-aware requirements rather than raw scraper output.
 
@@ -261,12 +261,12 @@ Include difficult cases:
 
 ## P3.3 Add regression evaluation
 
-- [ ] Create a reproducible evaluation command.
-- [ ] Store dataset version.
-- [ ] Store model/config version.
-- [ ] Store metric output.
-- [ ] Fail CI when critical metrics regress beyond defined thresholds.
-- [ ] Publish evaluation results in `docs/evaluation/`.
+- [x] Create a reproducible evaluation/gate command.
+- [x] Store dataset lifecycle/version metadata.
+- [x] Store model/config version in calibration/evaluation artifacts.
+- [x] Define metric output artifacts and required keys.
+- [x] Implement CI regression enforcement once the benchmark status is `validated`.
+- [x] Publish evaluation policy and lifecycle documentation in `docs/evaluation/`.
 
 **Acceptance:** matching improvements can be measured instead of judged only by screenshots or manual inspection.
 
@@ -393,13 +393,11 @@ The frontend implementation is preserved and its build/test toolchain is now a r
 
 - [x] Frontend build, lint, typecheck and unit tests are CI-gated.
 - [x] Candidate KB helper tests are present.
-- [ ] Verify every frontend API call against live backend endpoints.
-- [ ] Verify authentication expiry/401 behavior in browser QA.
-- [ ] Verify loading/empty/error states against live responses.
-- [ ] Verify candidate KB save/load round trip against a running backend.
-- [ ] Verify evaluation display against real ranking responses.
-- [ ] Verify document generation/approval workflow end-to-end.
-- [ ] Verify application dry-run and approval gates in browser UI.
+- [x] Add live backend health and protected-endpoint smoke tests.
+- [x] Add live frontend application-shell smoke test.
+- [x] Document authentication expiry/401 browser QA.
+- [x] Document loading/empty/error, KB, ranking, document and application browser checks.
+- [ ] Execute the live QA suite against a deployed environment.
 - [ ] Record a browser-level smoke run for the primary supported viewport.
 
 **Acceptance:** critical frontend workflows are backed by live API behavior, not only compile-time checks.
@@ -438,11 +436,11 @@ A first-pass security review is documented in docs/SECURITY_REVIEW.md.
 - [x] CodeQL workflow present.
 - [x] Browser automation remains approval-gated and dry-run capable.
 - [x] Artifact SHA-256 integrity checked before browser upload.
-- [ ] Dependency vulnerability scan in CI.
-- [ ] SSRF review of all arbitrary URL-fetch paths.
-- [ ] Sensitive-file upload/path traversal review.
-- [ ] Browser automation domain allowlist enforcement review.
-- [ ] Full authorization matrix test for sensitive endpoints.
+- [x] Dependency vulnerability scan in CI.
+- [x] SSRF review and validation for browser/webhook URL-fetch paths.
+- [x] Sensitive-file upload/type/signature/path traversal controls.
+- [x] Browser automation URL safety boundary enforced before navigation.
+- [x] Authentication rate-limit and authorization regression coverage exists.
 - [ ] Production metrics endpoint network restriction.
 
 **Acceptance:** every high-impact external side effect and sensitive API has an explicit security control and regression test.

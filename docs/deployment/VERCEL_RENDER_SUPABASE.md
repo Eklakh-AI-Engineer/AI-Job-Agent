@@ -30,8 +30,9 @@ Set these secrets/values in Render:
 - `REDIS_URL`, `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND`: managed Redis URLs.
 - `CORS_ORIGINS`: the exact Vercel origin, with no wildcard.
 - `OPENAI_API_KEY`: server-side only.
-- `S3_ENDPOINT_URL`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`: server-side
-  storage configuration when using the S3-compatible storage adapter.
+- `DOCUMENT_STORAGE_BACKEND=s3`, `DOCUMENT_STORAGE_BUCKET`, `DOCUMENT_STORAGE_ENDPOINT`,
+  `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`: server-side storage
+  configuration for the S3-compatible storage adapter.
 
 The API health endpoint is `/health`. The Docker entrypoint applies Alembic
 migrations before starting the selected process.

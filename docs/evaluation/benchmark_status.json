@@ -11,5 +11,11 @@
     "reviewer rationale for difficult cases",
     "adjudicate disagreements",
     "freeze dataset and record SHA-256"
-  ]
+  ],
+  "candidate_source_sha256": "3723436be0cd843e57edf569a3661c551960f225ea7587ac1a71369909f9c5bc",
+  "candidate_rows": 500,
+  "candidate_unique_job_ids": 100,
+  "adjudication_disagreements": 394,
+  "independent_adjudication": false,
+  "promotion_blocked_reason": "Synthetic JOB-001..JOB-100 identifiers are not proven to map to real persisted jobs; 394 AI/human label disagreements require independent adjudication."
 }

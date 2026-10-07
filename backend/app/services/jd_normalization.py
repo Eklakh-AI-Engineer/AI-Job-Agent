@@ -145,15 +145,18 @@ def normalize_date(value: Any) -> dict[str, str | None]:
 
     candidate = source.replace("Z", "+00:00")
     parsed: datetime | date | None = None
-    for parser in (
-        lambda s: datetime.fromisoformat(s),
-        lambda s: date.fromisoformat(s),
-    ):
-        try:
-            parsed = parser(candidate)
-            break
-        except ValueError:
-            continue
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", source):
+        parsed = date.fromisoformat(source)
+    else:
+        for parser in (
+            lambda s: datetime.fromisoformat(s),
+            lambda s: date.fromisoformat(s),
+        ):
+            try:
+                parsed = parser(candidate)
+                break
+            except ValueError:
+                continue
 
     if parsed is None:
         # Conservative support for common YYYY/MM/DD and DD-MM-YYYY feeds.

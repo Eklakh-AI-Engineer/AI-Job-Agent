@@ -30,9 +30,10 @@ ALIASES = {
 LABELS = {
     "exact": 3, "exactmatch": 3, "direct": 3, "directmatch": 3,
     "highpriority": 3, "apply": 3,
+    "match": 3,
     "related": 2, "relatedmatch": 2, "partial": 2, "partialmatch": 2,
-    "review": 2, "reasonable": 2, "strong": 2,
-    "nomatch": 1, "notrelevant": 1, "negative": 1, "reject": 1, "lowfit": 1,
+    "review": 2, "reasonable": 2, "strong": 2, "weakmatch": 2,
+    "borderline": 1, "nomatch": 0, "notrelevant": 0, "negative": 0, "reject": 0, "lowfit": 0,
     "uncertain": 0, "unknown": 0,
 }
 

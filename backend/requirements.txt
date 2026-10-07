@@ -31,6 +31,9 @@ slowapi==0.1.9
 structlog==24.1.0
 prometheus-client==0.20.0
 
+# ---- Object storage ----
+boto3==1.43.106
+
 # ---- Document artifacts ----
 reportlab==5.0.1
 python-docx==1.2.0

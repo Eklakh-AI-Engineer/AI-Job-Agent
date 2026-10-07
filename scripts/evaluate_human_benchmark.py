@@ -71,7 +71,9 @@ def canonical_query_id(value: Any) -> str:
     match = re.search(r"(?:^|[-_ ])(?:query|q)[-_ ]*(\d+)(?:[-_ ]|$)", text, re.I)
     if match:
         return f"Q-{int(match.group(1)):03d}"
-    return text\n\ndef as_float(value: Any) -> float | None:
+    return text
+
+def as_float(value: Any) -> float | None:
     if value is None or str(value).strip() == "":
         return None
     try:

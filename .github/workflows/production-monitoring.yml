@@ -1,0 +1,36 @@
+name: Production monitoring smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate production URLs are configured
+        env:
+          LIVE_API_URL: ${{ secrets.LIVE_API_URL }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: |
+          test -n "$LIVE_API_URL"
+          test -n "$FRONTEND_URL"
+      - name: Backend health
+        env:
+          LIVE_API_URL: ${{ secrets.LIVE_API_URL }}
+        run: |
+          curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/health"
+      - name: Backend metrics
+        env:
+          LIVE_API_URL: ${{ secrets.LIVE_API_URL }}
+        run: |
+          curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/metrics" | grep -q "http_requests_total"
+      - name: Frontend shell
+        env:
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: |
+          curl --fail --silent --show-error --max-time 20 "$FRONTEND_URL/" | grep -qi "<html"

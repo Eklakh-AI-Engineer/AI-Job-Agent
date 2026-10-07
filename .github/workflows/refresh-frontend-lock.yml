@@ -1,0 +1,25 @@
+name: Generate frontend lockfile
+on:
+  push:
+    branches: [feat/full-completion-github]
+permissions:
+  contents: read
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/full-completion-github
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refresh lockfile
+        working-directory: frontend
+        run: npm install
+      - name: Upload lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lockfile
+          path: frontend/package-lock.json
+          if-no-files-found: error

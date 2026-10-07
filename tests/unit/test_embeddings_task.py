@@ -43,6 +43,9 @@ async def test_regenerate_embeddings_uses_lazy_dependency_helpers(monkeypatch):
 
     updates = []
 
+    async def _update_job_embedding(_db, job_id, embedding):
+        updates.append((job_id, embedding))
+
     monkeypatch.setattr(tasks, "_get_db_session", lambda: _FakeSession)
     monkeypatch.setattr(tasks, "_get_job_model", lambda: _FakeJob)
     monkeypatch.setattr(
@@ -50,9 +53,7 @@ async def test_regenerate_embeddings_uses_lazy_dependency_helpers(monkeypatch):
         "_get_embedding_service",
         lambda: {
             "build_job_text": lambda job: "AI Engineer text",
-            "update_job_embedding": lambda db, job_id, embedding: updates.append(
-                (job_id, embedding)
-            ),
+            "update_job_embedding": _update_job_embedding,
         },
     )
     monkeypatch.setattr(tasks, "get_embedding_provider", lambda: _FakeProvider())

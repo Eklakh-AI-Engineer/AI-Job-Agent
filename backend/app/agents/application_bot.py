@@ -165,7 +165,8 @@ class PlaywrightFormFiller:
                 error=f"playwright not installed: {exc}",
             )
 
-        validate_public_url(request.apply_url)
+        allow_loopback = os.getenv("APP_ENV", "development").casefold() in {"development", "test"}
+        validate_public_url(request.apply_url, allow_loopback=allow_loopback)
         ats = request.ats
         applicant = request.applicant
         fields_filled: Dict[str, str] = {}

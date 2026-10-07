@@ -92,19 +92,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Enforce gate when benchmark is validated
+      - name: Enforce ranking regression gate
         shell: bash
         run: |
-          status=$(python - <<'PY'
-          import json
-          from pathlib import Path
-          print(json.loads(Path("docs/evaluation/benchmark_status.json").read_text())["status"])
-          PY
-          )
-          if [ "$status" != "validated" ]; then
-            echo "Benchmark status is '$status'; regression gate is not yet enforceable."
-            exit 0
-          fi
           test -f docs/evaluation/baseline.json
           test -f docs/evaluation/latest.json
           python scripts/ranking_regression_gate.py             --baseline docs/evaluation/baseline.json             --latest docs/evaluation/latest.json             --policy docs/evaluation/regression_policy.json

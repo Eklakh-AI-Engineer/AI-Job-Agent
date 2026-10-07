@@ -55,7 +55,3 @@ jobs:
 
       - name: Run true application pipeline E2E
         run: pytest ../tests/integration/test_true_pipeline_e2e.py -m e2e -q
-
-      - name: Ranking benchmark regression gate
-        working-directory: ${{ github.workspace }}
-        run: python scripts/evaluate_ranking.py --check-regression --output docs/evaluation/latest_regression.json

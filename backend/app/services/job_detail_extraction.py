@@ -8,10 +8,13 @@ persisting a fabricated placeholder.
 from __future__ import annotations
 
 import re
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from playwright.async_api import Page
+
+from app.core.ssrf import validate_public_url
 
 
 DESCRIPTION_SELECTORS = (
@@ -58,6 +61,8 @@ def extraction_metadata(
 
 async def extract_job_detail(page: Page, url: str) -> Dict[str, Any]:
     """Extract a real job description from a canonical detail page."""
+    allow_loopback = os.getenv("APP_ENV", "development").casefold() in {"development", "test"}
+    validate_public_url(url, allow_loopback=allow_loopback)
     await page.goto(url, wait_until="domcontentloaded", timeout=30_000)
     await page.wait_for_timeout(750)
 

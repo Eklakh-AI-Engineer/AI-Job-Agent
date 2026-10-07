@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Optional, List
 from datetime import datetime
-from sqlalchemy import String, Text, ForeignKey, JSON, DateTime, UniqueConstraint
+from sqlalchemy import String, Text, ForeignKey, JSON, DateTime, UniqueConstraint, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 from app.models.base import Base
@@ -36,6 +36,17 @@ class JobPosting(Base):
     compensation: Mapped[Optional[str]] = mapped_column(String(512))
     internship_information: Mapped[Optional[str]] = mapped_column(Text)
     raw_source_reference: Mapped[Optional[dict]] = mapped_column(JSON)
+
+    # Canonical normalized JD fields used by ranking/search. Raw source wording
+    # remains preserved above for evidence and auditability.
+    normalized_required_skills: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    normalized_preferred_skills: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    experience_min_years: Mapped[Optional[float]] = mapped_column(Float)
+    experience_max_years: Mapped[Optional[float]] = mapped_column(Float)
+    education_level: Mapped[Optional[str]] = mapped_column(String(50))
+    education_fields: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    jd_normalization_version: Mapped[Optional[str]] = mapped_column(String(50))
+    jd_normalization_status: Mapped[Optional[str]] = mapped_column(String(50))
 
     # The vector representation for semantic search
     embedding: Mapped[Optional[list[float]]] = mapped_column(Vector(1536))

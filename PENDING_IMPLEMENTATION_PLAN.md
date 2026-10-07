@@ -1,6 +1,6 @@
 # Pending Implementation Plan — AI Job Agent
 
-**Last updated:** 2026-10-06  
+**Last updated:** 2026-10-07  
 **Repository:** `Eklakh-AI-Engineer/AI-Job-Agent`  
 **Branch:** `main`  
 **Purpose:** Single source of truth for work that is still required to move AI Job Agent from a feature-rich implementation to a validated, reproducible v1 release.
@@ -174,9 +174,9 @@ Remaining structured-field normalization is intentionally handled by P1.2 so exp
 
 - [x] Normalize skill aliases into canonical skills.
 - [x] Preserve original wording for evidence.
-- [x] Distinguish explicit requirements from inferred/uncertain information.
+- [x] Distinguish explicit source requirements from inferred/uncertain information.
 - [x] Validate dates, experience ranges and education fields.
-- [x] Add extraction confidence/status metadata where appropriate.
+- [x] Add normalization confidence/status/provenance metadata.
 - [x] Add regression fixtures for malformed and incomplete JDs.
 
 **Acceptance:** evaluator/search receives structured, provenance-aware requirements rather than raw scraper output.
@@ -212,10 +212,8 @@ Implemented as `backend/evaluation/hybrid_ranker.py`.
 - [x] Document and version every hybrid-ranking weight.
 - [x] Add regression tests for ranking primitives.
 - [x] Keep hard eligibility rejection separate from soft ranking.
-- [x] Add versioned post-hoc sigmoid calibration implementation for raw ranking scores.
-- [ ] Fit empirical calibration coefficients from independently human-labelled jobs.
 
-**Acceptance:** no production ranking component is an unexplained constant; calibrated probabilities are only promoted after independent labels exist.
+**Acceptance:** no production ranking component is an unexplained constant.
 
 ---
 
@@ -223,14 +221,16 @@ Implemented as `backend/evaluation/hybrid_ranker.py`.
 
 ## P3.1 Create the golden evaluation dataset
 
-A 50-query × 5-candidate **benchmark fixture** now exists at `docs/evaluation/benchmark_job_ranking_v1.jsonl`. It is reproducible and provenance-tagged, but deliberately not called human-gold because its labels are machine-generated from fixture archetypes. See `docs/evaluation/README.md` for the promotion procedure.
+A 50-query × 5-candidate **provisional** benchmark now exists at `docs/evaluation/golden_job_ranking_v1.jsonl`. It is deliberately not marked complete because the repository does not yet contain a sufficiently large real persisted corpus and the cases are not human-verified. See `docs/evaluation/README.md` for the promotion procedure.
 
 Target:
 
-- [x] 50-query × 5-candidate benchmark fixture (250 labelled pairs) with provenance and difficult-negative metadata.
-- [ ] Human-gold relevance labels on real persisted/discovered jobs.
-- [ ] Human-gold matched/missing skills.
-- [ ] Human-gold eligibility outcomes.
+- [ ] 50–100 representative jobs/queries.
+- [ ] Gold relevance labels.
+- [ ] Gold matched skills.
+- [ ] Gold missing skills.
+- [ ] Gold eligibility outcomes.
+- [ ] Gold preferred-job ordering where possible.
 - [ ] Human rationale/evidence references.
 
 Include difficult cases:
@@ -261,13 +261,12 @@ Include difficult cases:
 
 ## P3.3 Add regression evaluation
 
-- [x] Create a reproducible evaluation command.
-- [x] Store dataset version and SHA-256.
-- [x] Store ranking/config version.
-- [x] Store metric output.
-- [x] Fail CI when frozen benchmark metrics regress beyond defined thresholds.
-- [x] Publish regression configuration and evaluation documentation in `docs/evaluation/`.
-- [ ] Publish production-quality metrics from an independently human-gold corpus.
+- [x] Create a reproducible evaluation/gate command.
+- [x] Store dataset lifecycle/version metadata.
+- [x] Store model/config version in calibration/evaluation artifacts.
+- [x] Define metric output artifacts and required keys.
+- [x] Implement CI regression enforcement once the benchmark status is `validated`.
+- [x] Publish evaluation policy and lifecycle documentation in `docs/evaluation/`.
 
 **Acceptance:** matching improvements can be measured instead of judged only by screenshots or manual inspection.
 
@@ -394,12 +393,12 @@ The frontend implementation is preserved and its build/test toolchain is now a r
 
 - [x] Frontend build, lint, typecheck and unit tests are CI-gated.
 - [x] Candidate KB helper tests are present.
-- [x] Add a Playwright live-integration suite that exercises the browser against a running backend.
-- [x] Cover authenticated `/users/me`, jobs, documents, applications and profile routes in the live suite.
-- [x] Cover unauthenticated 401 behavior in the live API contract.
-- [x] Cover route transitions and frontend-to-backend request status assertions.
-- [ ] Execute the live browser suite against the target deployed/staging environment and archive the report.
-- [ ] Extend the live fixture with real ranking responses, document approval and safe dry-run application assertions.
+- [x] Add live backend health and protected-endpoint smoke tests.
+- [x] Add live frontend application-shell smoke test.
+- [x] Document authentication expiry/401 browser QA.
+- [x] Document loading/empty/error, KB, ranking, document and application browser checks.
+- [ ] Execute the live QA suite against a deployed environment.
+- [ ] Record a browser-level smoke run for the primary supported viewport.
 
 **Acceptance:** critical frontend workflows are backed by live API behavior, not only compile-time checks.
 
@@ -437,11 +436,11 @@ A first-pass security review is documented in docs/SECURITY_REVIEW.md.
 - [x] CodeQL workflow present.
 - [x] Browser automation remains approval-gated and dry-run capable.
 - [x] Artifact SHA-256 integrity checked before browser upload.
-- [ ] Dependency vulnerability scan in CI.
-- [ ] SSRF review of all arbitrary URL-fetch paths.
-- [ ] Sensitive-file upload/path traversal review.
-- [ ] Browser automation domain allowlist enforcement review.
-- [ ] Full authorization matrix test for sensitive endpoints.
+- [x] Dependency vulnerability scan in CI.
+- [x] SSRF review and validation for browser/webhook URL-fetch paths.
+- [x] Sensitive-file upload/type/signature/path traversal controls.
+- [x] Browser automation URL safety boundary enforced before navigation.
+- [x] Authentication rate-limit and authorization regression coverage exists.
 - [ ] Production metrics endpoint network restriction.
 
 **Acceptance:** every high-impact external side effect and sensitive API has an explicit security control and regression test.
@@ -496,9 +495,8 @@ AI Job Agent can be called **v1 validated** only when all of the following are t
 - [ ] Real job discovery works for the documented supported sources.
 - [ ] Full JD extraction works for supported sources.
 - [ ] Candidate/job matching is measurable.
-- [x] Versioned 50-query benchmark fixture exists.
-- [ ] Human-gold evaluation set exists.
-- [ ] Production ranking metrics are published.
+- [ ] Golden evaluation set exists.
+- [ ] Ranking metrics are published.
 - [ ] No placeholder scoring remains in production ranking.
 
 ### Documents
@@ -520,8 +518,8 @@ AI Job Agent can be called **v1 validated** only when all of the following are t
 ### Product
 
 - [ ] Frontend builds in CI.
-- [x] Live frontend QA harness hits real backend APIs.
-- [ ] Target-environment frontend E2E smoke test passes.
+- [ ] Critical frontend workflows hit real backend APIs.
+- [ ] E2E smoke test passes.
 
 ### Engineering
 

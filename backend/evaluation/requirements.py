@@ -34,76 +34,6 @@ class JobLike(Protocol):
     eligibility: Optional[str]
     raw_source_reference: Optional[dict]
 
-
-# v1 deterministic normalization contract. Aliases are conservative: unknown
-# terms are preserved verbatim rather than guessed.
-NORMALIZATION_VERSION = "requirements-v1"
-SKILL_ALIASES = {
-    "py": "Python", "python3": "Python", "python 3": "Python",
-    "torch": "PyTorch", "pytorch": "PyTorch",
-    "tf": "TensorFlow", "tensorflow": "TensorFlow",
-    "js": "JavaScript", "javascript": "JavaScript",
-    "ts": "TypeScript", "typescript": "TypeScript",
-    "postgres": "PostgreSQL", "postgresql": "PostgreSQL",
-    "k8s": "Kubernetes", "kubernetes": "Kubernetes",
-    "react.js": "React", "reactjs": "React",
-    "node.js": "Node.js", "nodejs": "Node.js",
-}
-
-
-def normalize_skill(value: str) -> str:
-    cleaned = " ".join(str(value).strip().split())
-    return SKILL_ALIASES.get(cleaned.casefold(), cleaned)
-
-
-def normalize_skill_list(items: Optional[List[str]]) -> List[str]:
-    result = []
-    seen = set()
-    for item in _clean_str_list(items):
-        canonical = normalize_skill(item)
-        key = canonical.casefold()
-        if key not in seen:
-            seen.add(key)
-            result.append(canonical)
-    return result
-
-
-def _normalize_experience(value: Optional[str]) -> Optional[str]:
-    if not value:
-        return None
-    text = " ".join(str(value).strip().split())
-    if not text:
-        return None
-    # Reject impossible negative ranges while preserving source wording.
-    numbers = [float(x) for x in __import__("re").findall(r"(\\d+(?:\\.\\d+)?)", text)]
-    if numbers and any(n < 0 for n in numbers):
-        return None
-    return text
-
-
-def _validate_date_text(value: Optional[str]) -> str:
-    if not value:
-        return "unknown"
-    text = str(value).strip()
-    import datetime as dt
-    for parser in (dt.datetime.fromisoformat,):
-        try:
-            parser(text.replace("Z", "+00:00"))
-            return "valid"
-        except ValueError:
-            pass
-    if __import__("re").fullmatch(r"\d{4}-\d{2}", text):
-        try:
-            year, month = map(int, text.split("-"))
-            if 1 <= month <= 12 and 1900 <= year <= 2100:
-                return "valid_reduced_precision"
-        except ValueError:
-            pass
-    if __import__("re").fullmatch(r"\d{4}", text):
-        return "valid_year"
-    return "invalid"
-
-
 def _clean_str(val: Optional[str]) -> Optional[str]:
     """Return stripped string if non-empty, otherwise None."""
     if val is None:
@@ -246,26 +176,12 @@ def extract_requirements(job: JobLike) -> JobRequirements:
         role=_clean_str(job.title),
         seniority=_extract_seniority(job),
         domain_requirements=_extract_domain_requirements(job),
-        required_skills=normalize_skill_list(job.required_skills),
-        preferred_skills=normalize_skill_list(job.preferred_skills),
+        required_skills=_clean_str_list(job.required_skills),
+        preferred_skills=_clean_str_list(job.preferred_skills),
         education_requirements=_clean_str(job.education_requirement),
-        experience_requirements=_normalize_experience(job.experience_requirement),
+        experience_requirements=_clean_str(job.experience_requirement),
         eligibility_requirements=_extract_eligibility(job),
         location_requirements=_clean_str(job.location),
         work_mode=_clean_str(job.work_mode),
         other_constraints=_extract_other_constraints(job),
-        normalization_version=NORMALIZATION_VERSION,
-        field_provenance={
-            "role": "explicit",
-            "required_skills": "explicit_normalized",
-            "preferred_skills": "explicit_normalized",
-            "education_requirements": "explicit" if _clean_str(job.education_requirement) else "unknown",
-            "experience_requirements": "explicit" if _normalize_experience(job.experience_requirement) else "unknown",
-            "eligibility_requirements": "explicit" if _extract_eligibility(job) else "unknown",
-            "location_requirements": "explicit" if _clean_str(job.location) else "unknown",
-            "work_mode": "explicit" if _clean_str(job.work_mode) else "unknown",
-            "posted_date": _validate_date_text(getattr(job, "posted_date", None)),
-            "closing_date": _validate_date_text(getattr(job, "closing_date", None)),
-        },
-        extraction_confidence=1.0 if len(str(getattr(job, "job_description", getattr(job, "description", "")) or "").strip()) >= 120 else 0.0,
     )

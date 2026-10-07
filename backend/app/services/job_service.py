@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.job import JobPosting
 from app.schemas.job import JobPostingCreate
 from app.services.errors import JobAlreadyExistsError, JobNotFoundError
+from app.services.jd_normalization import normalize_job_requirements
 
 DEFAULT_LIMIT = 100
 MAX_LIMIT = 500
@@ -85,6 +86,7 @@ async def create_job(db: AsyncSession, payload: JobPostingCreate) -> JobPosting:
     if existing is not None:
         raise JobAlreadyExistsError("A job posting with this URL already exists")
 
+    normalized = normalize_job_requirements(payload.model_dump())
     job = JobPosting(
         title=payload.title,
         company=payload.company,
@@ -103,6 +105,16 @@ async def create_job(db: AsyncSession, payload: JobPostingCreate) -> JobPosting:
         preferred_skills=payload.preferred_skills or None,
         eligibility=payload.eligibility,
         compensation=payload.compensation,
+        internship_information=payload.internship_information,
+        raw_source_reference=payload.raw_source_reference,
+        normalized_required_skills=normalized["required_skills"],
+        normalized_preferred_skills=normalized["preferred_skills"],
+        experience_min_years=normalized["normalization"]["fields"]["experience"]["min_years"],
+        experience_max_years=normalized["normalization"]["fields"]["experience"]["max_years"],
+        education_level=normalized["normalization"]["fields"]["education"]["level"],
+        education_fields=normalized["normalization"]["fields"]["education"]["fields"],
+        jd_normalization_version=normalized["normalization"]["version"],
+        jd_normalization_status=normalized["normalization"]["status"],
     )
     db.add(job)
     await db.commit()

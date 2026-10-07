@@ -23,6 +23,8 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Protocol
 
 from app.agents.ats_config import ATSConfig, resolve_ats
+from app.core.ssrf import validate_public_url
+from app.core.upload_security import validate_upload
 
 logger = logging.getLogger(__name__)
 
@@ -125,12 +127,17 @@ class PlaywrightFormFiller:
     async def _upload_first(self, page, selectors: List[str], path: Optional[str]) -> Optional[str]:
         if not path or not os.path.isfile(path):
             return None
+        try:
+            safe_path = validate_upload(path)
+        except Exception as exc:
+            logger.warning("Rejected upload %s: %s", path, exc)
+            return None
         for selector in selectors:
             try:
                 element = await page.query_selector(selector)
                 if element is None:
                     continue
-                await element.set_input_files(path)
+                await element.set_input_files(str(safe_path))
                 return selector
             except Exception:  # noqa: BLE001
                 continue
@@ -158,6 +165,8 @@ class PlaywrightFormFiller:
                 error=f"playwright not installed: {exc}",
             )
 
+        allow_loopback = os.getenv("APP_ENV", "development").casefold() in {"development", "test"}
+        validate_public_url(request.apply_url, allow_loopback=allow_loopback)
         ats = request.ats
         applicant = request.applicant
         fields_filled: Dict[str, str] = {}

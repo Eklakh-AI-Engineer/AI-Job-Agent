@@ -1,36 +1,27 @@
-# Ranking Evaluation Dataset
+# Ranking Evaluation
 
-## v1 benchmark fixture
+## Benchmark lifecycle
 
-`benchmark_job_ranking_v1.jsonl` contains **50 query groups × 5 candidate jobs = 250 labelled pairs**.
+golden_job_ranking_v1.jsonl is currently a **provisional** 50-query × 5-candidate benchmark. It exercises the evaluation machinery but is not evidence of production ranking quality until promoted.
 
-Each group records:
-- a user-style search query;
-- five candidate job archetypes;
-- ordinal relevance labels (`0`–`3`);
-- relevant-job IDs;
-- difficult-negative IDs where present;
-- provenance and review-state metadata.
+### Required promotion
 
-The benchmark is intentionally marked `benchmark-fixture` and `human_verified: false`. The labels are machine-generated from the declared fixture archetypes. This avoids presenting synthetic labels as human evidence.
+1. Replace synthetic job IDs with real persisted/discovered jobs.
+2. Assign independent human relevance labels.
+3. Record rationale/evidence for difficult cases.
+4. Adjudicate disagreements.
+5. Freeze the dataset and record its SHA-256.
+6. Retain difficult negatives: keyword-overlap false positives, semantically similar but ineligible roles, missing mandatory requirements, related-role matches, noisy/incomplete JDs and preference conflicts.
+7. Record the ranking model/config version used for the baseline.
 
-## Promotion to human-gold
+See `benchmark_status.json` for machine-readable lifecycle state.
 
-To promote this fixture to a true human-gold release benchmark:
-1. replace synthetic job IDs with real persisted/discovered jobs;
-2. have a human reviewer label relevance independently;
-3. record matched/missing skills and eligibility outcomes;
-4. record reviewer rationale for difficult cases;
-5. adjudicate disagreements;
-6. freeze the dataset and SHA-256;
-7. evaluate the calibrated ranker on the frozen labels.
+## Regression gate
 
-The metric runner already supports the grouped format, so promotion does not require changing the scoring engine.
+The repository contains `scripts/evaluate_ranking.py` for metrics and `scripts/ranking_regression_gate.py` for baseline comparison. `regression_policy.json` defines allowable degradation. `baseline.json` becomes authoritative once a human-verified benchmark is promoted.
 
-## Regression
+CI is conditional on benchmark status being `validated`; until then it reports the benchmark as provisional rather than pretending synthetic scores are production evidence.
 
-`ranking_regression_thresholds_v1.json` defines the CI floor. The frozen prediction file is a contract/regression baseline, not a production-quality claim.
+Required metrics: `precision_at_5`, `recall_at_5`, `ndcg_at_5`, and `mrr`.
 
-## Calibration
-
-`backend/evaluation/calibration.py` implements a dependency-free sigmoid score calibrator. It maps raw 0–100 ranking scores to an estimated relevance probability while preserving ordering. Coefficients must be fitted from independent labelled data before being treated as empirical calibration.
+CI also runs Python and frontend runtime dependency vulnerability audits.

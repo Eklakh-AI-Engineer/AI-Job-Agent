@@ -42,6 +42,8 @@ class JobPostingCreate(BaseModel):
     preferred_skills: List[str] = Field(default_factory=list)
     eligibility: Optional[str] = None
     compensation: Optional[str] = Field(None, max_length=512)
+    internship_information: Optional[str] = None
+    raw_source_reference: Optional[dict] = None
 
     @field_validator("title", "company", "location", "url", "source")
     @classmethod
@@ -77,6 +79,15 @@ class JobPostingRead(BaseModel):
     preferred_skills: Optional[List[str]] = None
     eligibility: Optional[str] = None
     compensation: Optional[str] = None
+    internship_information: Optional[str] = None
+    normalized_required_skills: Optional[List[str]] = None
+    normalized_preferred_skills: Optional[List[str]] = None
+    experience_min_years: Optional[float] = None
+    experience_max_years: Optional[float] = None
+    education_level: Optional[str] = None
+    education_fields: Optional[List[str]] = None
+    jd_normalization_version: Optional[str] = None
+    jd_normalization_status: Optional[str] = None
 
     created_at: Optional[datetime] = None
 

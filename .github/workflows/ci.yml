@@ -34,6 +34,8 @@ jobs:
         run: python -m compileall -q .
       - name: Unit tests
         run: pytest ../tests/unit -q
+      - name: True pipeline E2E
+        run: pytest ../tests/integration/test_true_pipeline_e2e.py -q
 
   frontend:
     name: Frontend lint, typecheck, test and build
@@ -49,7 +51,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Lint
         run: npm run lint
       - name: Typecheck
@@ -58,3 +60,52 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
+      - name: Runtime dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+  security:
+    name: Dependency security audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pip-audit
+        run: python -m pip install --upgrade pip-audit
+      - name: Audit backend requirements
+        run: pip-audit -r backend/requirements.txt --no-deps
+
+  benchmark-validation:
+    name: Validate ranking benchmark structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate benchmark
+        run: |
+          python scripts/validate_benchmark.py \
+            docs/evaluation/golden_job_ranking_v1.jsonl \
+            --manifest /tmp/benchmark-manifest.json
+
+  evaluation-gate:
+    name: Ranking regression gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce gate when benchmark is validated
+        shell: bash
+        run: |
+          status=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          print(json.loads(Path("docs/evaluation/benchmark_status.json").read_text())["status"])
+          PY
+          )
+          if [ "$status" != "validated" ]; then
+            echo "Benchmark status is '$status'; regression gate is not yet enforceable."
+            exit 0
+          fi
+          test -f docs/evaluation/baseline.json
+          test -f docs/evaluation/latest.json
+          python scripts/ranking_regression_gate.py             --baseline docs/evaluation/baseline.json             --latest docs/evaluation/latest.json             --policy docs/evaluation/regression_policy.json
+

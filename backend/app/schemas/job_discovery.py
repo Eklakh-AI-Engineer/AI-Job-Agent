@@ -41,6 +41,16 @@ class JobDiscoveryCreate(BaseModel):
     compensation: Optional[str] = Field(None, max_length=512)
     internship_information: Optional[str] = None
     raw_source_reference: Optional[dict] = None
+    # Computed normalization fields are optional on ingestion; the service
+    # derives them from the source fields to keep all ingestion paths consistent.
+    normalized_required_skills: List[str] = Field(default_factory=list)
+    normalized_preferred_skills: List[str] = Field(default_factory=list)
+    experience_min_years: Optional[float] = None
+    experience_max_years: Optional[float] = None
+    education_level: Optional[str] = None
+    education_fields: List[str] = Field(default_factory=list)
+    jd_normalization_version: Optional[str] = None
+    jd_normalization_status: Optional[str] = None
 
     @field_validator("title", "company", "location", "url", "source", mode="before")
     @classmethod

@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test"
+    "test": "node --test",
+    "test:live": "node --test tests/live-api.test.mjs",
+    "test:live:frontend": "node --test tests/live-frontend.test.mjs"
   },
   "dependencies": {
-    "next": "16.2.12",
+    "next": "16.3.8",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -20,8 +22,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "nanoid": ">=3.3.18",
+    "source-map-js": ">=1.2.2"
   }
 }

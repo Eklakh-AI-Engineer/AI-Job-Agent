@@ -96,3 +96,28 @@ def test_validate_production_config_skipped_in_development():
     }):
         settings = Settings()
         settings.validate_production_config()  # Should not raise in development
+
+
+def test_production_managed_database_url_is_preserved():
+    settings = Settings(
+        app_env="production",
+        database_url="postgresql+asyncpg://user:realpass@db.supabase.co:5432/postgres",
+        secret_key="real-secret",
+        jwt_secret="real-jwt-secret",
+        cors_origins="https://app.example.com",
+    )
+    assert settings.effective_database_url == settings.database_url
+
+
+def test_kubernetes_can_explicitly_use_internal_database():
+    settings = Settings(
+        app_env="production",
+        use_in_cluster_database=True,
+        database_url="postgresql+asyncpg://user:realpass@external.example:5432/db",
+        database_host_in_cluster="postgres",
+        database_port_in_cluster=5432,
+        secret_key="real-secret",
+        jwt_secret="real-jwt-secret",
+        cors_origins="https://app.example.com",
+    )
+    assert "@postgres:5432/" in settings.effective_database_url

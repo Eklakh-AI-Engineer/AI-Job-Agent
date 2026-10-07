@@ -167,7 +167,10 @@ def normalize_date(value: Any) -> dict[str, str | None]:
     if parsed is None:
         return {"source": source, "iso": None, "status": "invalid"}
 
-    iso = parsed.isoformat()
+    if isinstance(parsed, date) and not isinstance(parsed, datetime):
+        iso = parsed.isoformat()
+    else:
+        iso = parsed.isoformat()
     return {"source": source, "iso": iso, "status": "explicit"}
 
 

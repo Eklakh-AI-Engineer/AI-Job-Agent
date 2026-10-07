@@ -16,7 +16,7 @@ from openpyxl import load_workbook
 
 ALIASES = {
     "sample_id": ("sampleid", "caseid", "rowid", "id"),
-    "query_id": ("queryid",),
+    "query_id": ("queryid", "evaluationid"),
     "job_id": ("jobid", "candidateid"),
     "query": ("querytext", "searchquery", "userquery"),
     "ai_label": ("ailabel", "aimatchlabel", "predictedlabel", "modellabel"),

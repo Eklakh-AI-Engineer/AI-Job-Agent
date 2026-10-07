@@ -65,6 +65,13 @@ def as_label(value: Any) -> int:
             return label
     raise ValueError(f"unsupported label: {value!r}")
 
+def canonical_query_id(value: Any) -> str:
+    """Normalize an encoded evaluation identifier into a query group when possible."""
+    text = str(value or "").strip()
+    match = re.search(r"(?:^|[-_ ])(?:query|q)[-_ ]*(\\d+)(?:[-_ ]|$)", text, re.I)
+    if match:
+        return f"Q-{int(match.group(1)):03d}"
+    return text
 def as_float(value: Any) -> float | None:
     if value is None or str(value).strip() == "":
         return None
@@ -191,7 +198,7 @@ def main() -> int:
                 else int(round(as_float(raw_record[columns["ai_score"]]) / 100 * 3))
             )
             ai_score = as_float(raw_record[columns["ai_score"]]) if columns["ai_score"] else None
-            query_id = str(raw_record[columns["query_id"]]).strip()
+            query_id = canonical_query_id(raw_record[columns["query_id"]])
             job_id = str(raw_record[columns["job_id"]]).strip()
             if not query_id or not job_id:
                 raise ValueError("query_id and job_id are required")

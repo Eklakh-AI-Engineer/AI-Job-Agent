@@ -267,7 +267,7 @@ def main() -> int:
         },
         "ranking": ranking_metrics(groups),
         "status": {
-            "human_verified": True,
+            "human_verified": bool(args.promote),
             "frozen": bool(args.promote),
             "real_persisted_jobs": bool(args.real_persisted_jobs),
             "validated": bool(args.promote and args.real_persisted_jobs),

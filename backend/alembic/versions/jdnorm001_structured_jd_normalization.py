@@ -1,20 +1,18 @@
-"""Add structured JD normalization metadata.
+"""Record the structured JD normalization contract.
 
 Revision ID: jdnorm001
-Revises: None
+Revises: c7d4e1a9f2b8
 """
-from alembic import op
-import sqlalchemy as sa
-
 revision = "jdnorm001"
-down_revision = None
+down_revision = "c7d4e1a9f2b8"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    # Normalization metadata is stored inside the existing JSON provenance
-    # envelope, so no schema column is required for v1.
+    # v1 stores normalization metadata inside JobPosting.raw_source_reference.
+    # The migration exists to version the persistence contract without adding
+    # duplicate columns for data that is already JSON-backed.
     pass
 
 

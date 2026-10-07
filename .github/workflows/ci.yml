@@ -60,6 +60,8 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
+      - name: Runtime dependency audit
+        run: npm audit --omit=dev --audit-level=high
 
   security:
     name: Dependency security audit

@@ -276,6 +276,12 @@ async def _regenerate_embeddings_async(job_ids: List[int], provider_name: Option
     else:
         provider = get_embedding_provider()
     
+    AsyncSessionLocal = _get_db_session()
+    JobPosting = _get_job_model()
+    embedding_service = _get_embedding_service()
+    build_job_text = embedding_service["build_job_text"]
+    update_job_embedding = embedding_service["update_job_embedding"]
+
     async with AsyncSessionLocal() as db:
         from sqlalchemy import select
         result = await db.execute(

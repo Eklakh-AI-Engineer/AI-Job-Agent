@@ -10,3 +10,4 @@ aiosqlite==0.20.0        # lets the API test suite run without PostgreSQL
 black==24.8.0
 ruff==0.6.9
 pre-commit==3.8.0
+openpyxl==3.1.5

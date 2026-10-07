@@ -101,3 +101,24 @@ async def test_get_job_or_raise_returns_posting(db_session):
 async def test_get_job_or_raise_raises_when_missing(db_session):
     with pytest.raises(JobNotFoundError):
         await get_job_or_raise(db_session, 404)
+
+
+async def test_create_job_persists_normalized_jd_fields(db_session):
+    job = await create_job(
+        db_session,
+        make_payload(
+            required_skills=["Python 3", "PyTorch"],
+            preferred_skills=["K8s"],
+            experience_requirement="2-4 years",
+            education_requirement="B.Tech in Computer Science",
+        ),
+    )
+
+    assert job.normalized_required_skills == ["python", "pytorch"]
+    assert job.normalized_preferred_skills == ["kubernetes"]
+    assert job.experience_min_years == 2.0
+    assert job.experience_max_years == 4.0
+    assert job.education_level == "bachelor"
+    assert job.education_fields == ["computer science"]
+    assert job.jd_normalization_version == "jd-normalization-v1"
+    assert job.jd_normalization_status == "normalized"

@@ -37,6 +37,24 @@ jobs:
       - name: True pipeline E2E
         run: pytest ../tests/integration/test_true_pipeline_e2e.py -q
 
+  frontend-lockfile-refresh:
+    name: Generate refreshed frontend lockfile (completion branch only)
+    if: github.event_name == 'pull_request' && github.head_ref == 'feat/full-completion-github'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Resolve frontend dependencies
+        working-directory: frontend
+        run: npm install --package-lock-only
+      - name: Upload refreshed lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lockfile-refresh
+          path: frontend/package-lock.json
+
   frontend:
     name: Frontend lint, typecheck, test and build
     runs-on: ubuntu-latest

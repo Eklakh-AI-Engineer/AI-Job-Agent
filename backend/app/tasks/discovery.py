@@ -19,6 +19,7 @@ from app.agents.workday import WorkdayDiscoveryAgent
 from app.core.celery_app import celery_app
 from app.core.config import get_settings
 from app.services.job_detail_extraction import extract_job_detail
+from app.services.jd_normalization import normalize_job_requirements
 from playwright.async_api import async_playwright
 
 logger = logging.getLogger(__name__)
@@ -269,6 +270,12 @@ async def _discover_from_source(source: BaseJobSource, url: str) -> DiscoveryRes
                         source_reference = dict(normalized.get("raw_source_reference") or normalized)
                         source_reference["detail_extraction"] = detail["extraction"]
 
+                        # Normalize only source-provided structured requirements.
+                        # Free-form JD prose remains evidence and is never silently
+                        # promoted into a hard requirement.
+                        structured = normalize_job_requirements(normalized)
+                        source_reference["normalization"] = structured["normalization"]
+
                         payload = JobDiscoveryCreate(
                             title=normalized.get("title", ""),
                             company=normalized.get("company", ""),
@@ -279,6 +286,15 @@ async def _discover_from_source(source: BaseJobSource, url: str) -> DiscoveryRes
                             source_job_id=normalized.get("source_job_id"),
                             application_url=normalized.get("application_url") or detail_url,
                             work_mode=normalized.get("work_mode"),
+                            posted_date=structured["posted_date"],
+                            closing_date=structured["closing_date"],
+                            experience_requirement=structured["experience_requirement"],
+                            education_requirement=structured["education_requirement"],
+                            required_skills=structured["required_skills"],
+                            preferred_skills=structured["preferred_skills"],
+                            eligibility=normalized.get("eligibility"),
+                            compensation=normalized.get("compensation"),
+                            internship_information=normalized.get("internship_information"),
                             raw_source_reference=source_reference,
                         )
                         all_payloads.append(payload)

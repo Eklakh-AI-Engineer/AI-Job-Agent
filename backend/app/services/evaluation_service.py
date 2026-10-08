@@ -17,11 +17,11 @@ from app.services.candidate_kb_service import (
     load_candidate_kb,
 )
 from app.services.job_discovery_service import get_job_by_id as get_job_by_id_service
-from backend.evaluation.candidate_models import CandidateKB
-from backend.evaluation.evaluator import evaluate_candidate_against_job
-from backend.evaluation.hybrid_ranker import rank_candidate_job
-from backend.evaluation.models import EvaluationResult
-from backend.evaluation.requirements import extract_requirements
+from evaluation.candidate_models import CandidateKB
+from evaluation.evaluator import evaluate_candidate_against_job
+from evaluation.hybrid_ranker import rank_candidate_job
+from evaluation.models import EvaluationResult
+from evaluation.requirements import extract_requirements
 
 __all__ = [
     "CandidateKBNotFoundError",

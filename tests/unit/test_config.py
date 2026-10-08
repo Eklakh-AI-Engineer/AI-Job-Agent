@@ -24,6 +24,10 @@ def test_validate_production_config_passes_with_proper_secrets():
         "JWT_SECRET": "real-jwt-secret-key-32-chars-minimum",
         "DATABASE_URL": "postgresql+asyncpg://user:realpass@localhost:5432/db",
         "CORS_ORIGINS": "https://app.example.com,https://api.example.com",
+        "DOCUMENT_STORAGE_BACKEND": "supabase",
+        "SUPABASE_URL": "https://example.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "service-role",
+        "DOCUMENT_STORAGE_BUCKET": "artifacts",
     }):
         settings = Settings()
         settings.validate_production_config()  # Should not raise
@@ -97,6 +101,18 @@ def test_validate_production_config_skipped_in_development():
         settings = Settings()
         settings.validate_production_config()  # Should not raise in development
 
+
+def test_supabase_postgres_url_is_normalized_for_asyncpg():
+    settings = Settings(
+        app_env="production",
+        database_url="postgresql://postgres.project:pass@aws-0-region.pooler.supabase.com:6543/postgres?sslmode=require",
+        secret_key="real-secret",
+        jwt_secret="real-jwt-secret",
+        cors_origins="https://app.example.com",
+    )
+    assert settings.effective_database_url.startswith("postgresql+asyncpg://")
+    assert "ssl=require" in settings.effective_database_url
+    assert "sslmode=" not in settings.effective_database_url
 
 def test_production_managed_database_url_is_preserved():
     settings = Settings(

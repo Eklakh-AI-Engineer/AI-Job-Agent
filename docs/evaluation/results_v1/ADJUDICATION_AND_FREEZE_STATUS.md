@@ -1,15 +1,24 @@
-# Human Label Adjudication & Benchmark Freeze Candidate v2
+# Human Label Adjudication & Benchmark Freeze Status v3
 
 **Source workbook:** `docs/evaluation/Human_Benchmark_Labeled_v1.xlsx`  
-**Uploaded workbook SHA-256:** `908597ca7e9a995fe83f0fc98d8ae608561543f6f71bdf51eed0cb7408a6ee92`  
+**Source workbook SHA-256:** `908597ca7e9a995fe83f0fc98d8ae608561543f6f71bdf51eed0cb7408a6ee92`  
+**Final frozen adjudication artifact SHA-256:** `ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e`  
 **Rows:** 500  
-**Ranking groups:** 100 synthetic jobs × 5 candidates
+** **Ranking groups:** 100 synthetic jobs × 5 candidates
 
-## Label verification
+## Adjudication completed
 
-The workbook's `Benchmark Data` sheet contains 500 completed independent human annotations. The `Final Chosen Label` column matches the human annotation and is treated as the human annotation output.
+The original workbook contained one human annotation pass across all 500 candidates.
 
-The workbook uses a five-level ordinal rubric:
+- Initial exact agreement with reference labels: **359/500 (71.8%)**
+- Initial disagreements: **141**
+- Reviewer 2 completed all **141** disputed cases.
+- Two-reviewer consensus: **83/141 (58.9%)**
+- Remaining disagreements: **58**
+- A third adjudicator resolved all **58/58** remaining cases.
+- Therefore all 500 benchmark rows now have a resolved final-gold label.
+
+The five-level ordinal rubric is:
 
 - 0 = No Match
 - 1 = Borderline
@@ -17,58 +26,56 @@ The workbook uses a five-level ordinal rubric:
 - 3 = Match
 - 4 = Strong Match
 
-Reference/AI vs human annotation:
+## Final human-gold distribution
 
-- Exact agreement: **359/500 (71.8%)**
-- Disagreements requiring adjudication: **141/500**
-- Cohen's kappa: **0.595673**
-- Standard quadratic weighted kappa: **0.677025**
+| Final Gold Label | Count |
+|---|---:|
+| No Match | 120 |
+| Borderline | 111 |
+| Weak Match | 214 |
+| Match | 25 |
+| Strong Match | 30 |
 
-The workbook's `Independent Analysis` sheet reports a quadratic weighted kappa of 0.8670. That figure is not reproduced by the repository's standard ordinal weighting implementation and is therefore not used as the authoritative statistic until its weighting methodology is reconciled.
+Final gold vs reference exact agreement is **397/500 (79.4%)**.
 
-## Ranking-group contract
+The workbook's prior Independent Analysis quadratic weighted-kappa value is not used as an authoritative statistic because the repository's standard weighting implementation did not reproduce it. The adjudicated labels are the authoritative human-gold decisions for this frozen synthetic benchmark.
 
-`Evaluation ID` is row-level (`EVAL-0001` ... `EVAL-0500`) and must not be treated as a ranking query group.
+## Freeze decision
 
-Each `Job ID` contains exactly five candidate rows, so the evaluator now falls back to `Job ID` as the ranking group when no explicit query-group identifier is available.
+**HUMAN-GOLD VERIFIED AND FROZEN.**
 
-## Independent adjudication
+The completed adjudication record is preserved in the local reconciliation/final workbook and the machine-readable adjudicated benchmark artifact.
 
-**NOT COMPLETED.**
+Frozen artifact:
 
-The workbook contains one independent annotation pass. There is no second-reviewer/adjudication record for the 141 disagreement cases.
+- `Human_Gold_Final_v1.xlsx`
+- SHA-256: `ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e`
+- Machine-readable artifact: `docs/evaluation/results_v1/golden_human_final_v1.jsonl`
 
-The repository therefore does **not** mark the benchmark as human-gold or production-validated.
+## Production promotion status
 
-## Real persisted-job mapping
+**NOT YET PRODUCTION-AUTHORITATIVE.**
 
-**NOT COMPLETED.**
+The 100 benchmark job IDs remain synthetic (`JOB-001` ... `JOB-100`). There is currently no evidence that they map one-to-one to persisted production `job_postings` records.
 
-The 100 job identifiers are synthetic `JOB-001` ... `JOB-100`. No repository evidence currently proves that they correspond to production `job_postings` records.
+Therefore:
 
-## Freeze / promotion
+1. Human-gold verification is complete.
+2. Benchmark freeze is complete.
+3. Production ranking baseline generation is still blocked on real persisted-job mapping.
+4. The regression gate must not be repointed to this synthetic benchmark as the production baseline until that mapping is established.
 
-The uploaded workbook is reproducible by SHA-256, but it is a **candidate human-labeled artifact**, not a production gold freeze.
-
-Promotion remains blocked until:
-
-1. A second human independently reviews/adjudicates all 141 disagreements.
-2. Decisions and rationales are recorded.
-3. Synthetic IDs are mapped to real persisted/discovered jobs.
-4. The adjudicated dataset is frozen with a final SHA-256.
-5. The real ranking baseline is generated from that frozen dataset.
-6. The regression gate is pointed at that authoritative baseline.
-
-**Current state**
+## Current state
 
 ```yaml
-status: provisional
-human_verified: false
-independent_adjudication: false
+status: frozen_adjudicated_synthetic
+human_verified: true
+independent_adjudication: true
+frozen: true
 real_persisted_jobs: false
-frozen: false
 production_ranking_baseline: false
 source_hash_recorded: true
+final_frozen_hash_recorded: true
 ```
 
-**Decision:** retain `golden_job_ranking_v1` as provisional. Do not claim production ranking quality from this benchmark yet.
+**Decision:** treat this artifact as the frozen human-gold benchmark. Do not claim production ranking quality until the synthetic-to-persisted job mapping is completed.

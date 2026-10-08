@@ -7,7 +7,10 @@ from pathlib import Path
 DEFAULT_POLICY = {"precision_at_5": 0.02, "recall_at_5": 0.02, "ndcg_at_5": 0.02, "mrr": 0.02}
 
 def load(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(data, dict) and "metrics" in data:
+        return data["metrics"]
+    return data
 
 def main() -> int:
     parser = argparse.ArgumentParser()

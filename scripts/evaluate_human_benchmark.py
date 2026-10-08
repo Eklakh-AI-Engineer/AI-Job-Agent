@@ -32,7 +32,7 @@ LABELS = {
     "highpriority": 3, "apply": 3,
     "match": 3,
     "related": 2, "relatedmatch": 2, "partial": 2, "partialmatch": 2,
-    "review": 2, "reasonable": 2, "strong": 2, "weakmatch": 2,
+    "review": 2, "reasonable": 2, "strong": 4, "strongmatch": 4, "weakmatch": 2,
     "borderline": 1, "nomatch": 0, "notrelevant": 0, "negative": 0, "reject": 0, "lowfit": 0,
     "uncertain": 0, "unknown": 0,
 }

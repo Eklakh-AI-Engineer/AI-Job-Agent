@@ -184,13 +184,49 @@ class PlaywrightFormFiller:
                     await page.goto(request.apply_url, wait_until="domcontentloaded",
                                     timeout=request.timeout_ms)
 
-                    # Wait for the form to appear
+                    # Wait for the form to appear. Public Lever job pages expose
+                    # the application form behind an Apply link; resolve that page
+                    # before probing selectors. This remains dry-run safe because
+                    # no submit control is clicked here.
+                    form_visible = False
                     for selector in ats.form_ready:
                         try:
-                            await page.wait_for_selector(selector, timeout=5000)
+                            await page.wait_for_selector(selector, timeout=2500)
+                            form_visible = True
                             break
                         except Exception:  # noqa: BLE001
                             continue
+
+                    if not form_visible:
+                        apply_link = page.get_by_role("link", name="apply for this job")
+                        if await apply_link.count():
+                            await apply_link.first.click()
+                            await page.wait_for_load_state("domcontentloaded")
+                            for selector in ats.form_ready:
+                                try:
+                                    await page.wait_for_selector(selector, timeout=7000)
+                                    form_visible = True
+                                    break
+                                except Exception:  # noqa: BLE001
+                                    continue
+
+                    if not form_visible:
+                        apply_button = page.get_by_role("button", name="apply")
+                        if await apply_button.count():
+                            await apply_button.first.click()
+                            await page.wait_for_load_state("domcontentloaded")
+                            for selector in ats.form_ready:
+                                try:
+                                    await page.wait_for_selector(selector, timeout=7000)
+                                    form_visible = True
+                                    break
+                                except Exception:  # noqa: BLE001
+                                    continue
+
+                    if not form_visible:
+                        raise RuntimeError(
+                            f"ATS application form did not load for {request.apply_url}"
+                        )
 
                     # Fill text fields
                     simple_fields = {

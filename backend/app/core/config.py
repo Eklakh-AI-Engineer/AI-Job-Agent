@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import List
-from urllib.parse import urlparse, urlunparse
+import os
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from pydantic_settings import BaseSettings
 
@@ -48,18 +49,21 @@ class Settings(BaseSettings):
 
     @property
     def effective_database_url(self) -> str:
+        """Return an asyncpg-compatible database URL.
+
+        Supabase commonly exposes postgresql:// URLs while this service
+        uses SQLAlchemy's asyncpg driver. Normalize postgres:// and
+        postgresql:// to postgresql+asyncpg:// and translate sslmode to ssl.
         """
-        Return the database URL appropriate for the current environment.
-        
-        Use the configured DATABASE_URL by default, including managed
-        PostgreSQL such as Supabase. Kubernetes deployments may explicitly set
-        USE_IN_CLUSTER_DATABASE=true to use the internal postgres service.
-        """
+        database_url = self.database_url
+
         if self.is_production and self.use_in_cluster_database:
-            parsed = urlparse(self.database_url)
-            # Replace host and port with in-cluster values
-            netloc = f"{parsed.username}:{parsed.password}@{self.database_host_in_cluster}:{self.database_port_in_cluster}"
-            return urlunparse((
+            parsed = urlparse(database_url)
+            netloc = (
+                f"{parsed.username}:{parsed.password}@"
+                f"{self.database_host_in_cluster}:{self.database_port_in_cluster}"
+            )
+            database_url = urlunparse((
                 parsed.scheme,
                 netloc,
                 parsed.path,
@@ -67,7 +71,26 @@ class Settings(BaseSettings):
                 parsed.query,
                 parsed.fragment,
             ))
-        return self.database_url
+
+        parsed = urlparse(database_url)
+        scheme = parsed.scheme
+        if scheme in {"postgres", "postgresql"}:
+            scheme = "postgresql+asyncpg"
+
+        query = parse_qsl(parsed.query, keep_blank_values=True)
+        query = [
+            ("ssl" if key == "sslmode" else key, value)
+            for key, value in query
+        ]
+
+        return urlunparse((
+            scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            urlencode(query),
+            parsed.fragment,
+        ))
 
     def validate_production_config(self) -> None:
         """Validate that production-critical secrets are not using defaults.
@@ -88,6 +111,17 @@ class Settings(BaseSettings):
             errors.append("DATABASE_URL must not contain default password 'change-me' in production")
         if self.cors_origins == "*":
             errors.append("CORS_ORIGINS must be explicitly set (not '*') in production")
+
+        storage_backend = os.getenv("DOCUMENT_STORAGE_BACKEND", "local").lower()
+        if storage_backend == "local":
+            errors.append("DOCUMENT_STORAGE_BACKEND must be 'supabase' or 's3' in production")
+        if storage_backend == "supabase":
+            if not os.getenv("SUPABASE_URL"):
+                errors.append("SUPABASE_URL must be set when DOCUMENT_STORAGE_BACKEND='supabase'")
+            if not os.getenv("SUPABASE_SERVICE_ROLE_KEY"):
+                errors.append("SUPABASE_SERVICE_ROLE_KEY must be set when DOCUMENT_STORAGE_BACKEND='supabase'")
+            if not os.getenv("DOCUMENT_STORAGE_BUCKET"):
+                errors.append("DOCUMENT_STORAGE_BUCKET must be set when DOCUMENT_STORAGE_BACKEND='supabase'")
 
         if errors:
             raise RuntimeError("Production configuration invalid:\n  - " + "\n  - ".join(errors))

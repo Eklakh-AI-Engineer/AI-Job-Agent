@@ -50,7 +50,7 @@ Frozen artifact:
 
 - `Human_Gold_Final_v1.xlsx`
 - SHA-256: `ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e`
-- Machine-readable artifact: `docs/evaluation/results_v1/golden_human_final_v1.jsonl`
+- Local machine-readable artifact produced with the freeze: `golden_job_ranking_v1_final.jsonl`
 
 ## Production promotion status
 

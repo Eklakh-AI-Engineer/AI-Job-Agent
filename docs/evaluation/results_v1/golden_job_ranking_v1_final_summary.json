@@ -1,0 +1,13 @@
+{
+  "benchmark":"golden_job_ranking_v1",
+  "status":"frozen_adjudicated_synthetic",
+  "rows":500,
+  "unique_jobs":100,
+  "candidates_per_job":5,
+  "final_gold_reference_exact_agreement":397,
+  "final_gold_reference_agreement_rate":0.794,
+  "label_distribution":{"No Match":120,"Borderline":111,"Weak Match":214,"Match":25,"Strong Match":30},
+  "metrics":{"precision_at_5":0.76,"recall_at_5":1.0,"ndcg_at_5":0.9105,"mrr":1.0},
+  "final_workbook_sha256":"ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e",
+  "production_authoritative":false
+}

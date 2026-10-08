@@ -1,26 +1,37 @@
 {
   "benchmark": "golden_job_ranking_v1",
-  "status": "provisional",
-  "human_verified": false,
+  "status": "frozen_adjudicated_synthetic",
+  "human_verified": true,
   "real_persisted_jobs": false,
-  "frozen": false,
+  "frozen": true,
   "schema_version": "2",
   "label_rubric": "0=No Match, 1=Borderline, 2=Weak Match, 3=Match, 4=Strong Match",
   "promotion_requirements": [
-    "replace synthetic job IDs with real persisted/discovered jobs",
-    "second independent human adjudication of all reference-vs-human disagreements",
-    "record adjudication decisions and rationales",
-    "freeze dataset and record final SHA-256",
-    "generate ranking baseline from frozen adjudicated labels"
+    "map synthetic job IDs to real persisted/discovered jobs",
+    "generate production ranking baseline from the frozen adjudicated labels",
+    "point regression gate at the authoritative production baseline"
   ],
   "uploaded_workbook_sha256": "908597ca7e9a995fe83f0fc98d8ae608561543f6f71bdf51eed0cb7408a6ee92",
+  "final_frozen_workbook_sha256": "ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e",
   "candidate_rows": 500,
   "candidate_unique_job_ids": 100,
   "candidates_per_job": 5,
-  "reference_human_exact_agreement": 359,
-  "reference_human_agreement_rate": 0.718,
-  "adjudication_disagreements": 141,
-  "independent_adjudication": false,
+  "reference_human_exact_agreement_initial": 359,
+  "reference_human_agreement_rate_initial": 0.718,
+  "adjudication_disagreements_initial": 141,
+  "second_reviewer_completed": 141,
+  "two_reviewer_consensus": 83,
+  "third_adjudication_completed": 58,
+  "independent_adjudication": true,
+  "final_gold_reference_exact_agreement": 397,
+  "final_gold_reference_agreement_rate": 0.794,
+  "final_gold_label_distribution": {
+    "No Match": 120,
+    "Borderline": 111,
+    "Weak Match": 214,
+    "Match": 25,
+    "Strong Match": 30
+  },
   "production_ranking_baseline": false,
-  "promotion_blocked_reason": "The uploaded workbook is independently human-annotated but has no second-reviewer adjudication record; JOB-001..JOB-100 are synthetic and are not proven to map to persisted production jobs."
+  "promotion_blocked_reason": "The adjudicated benchmark is frozen and human-verified, but JOB-001..JOB-100 remain synthetic and are not proven to map to persisted production jobs. Therefore this is not yet the production-authoritative ranking baseline."
 }

@@ -1,15 +1,17 @@
 {
   "benchmark": "golden_job_ranking_v1",
-  "benchmark_status": "provisional",
-  "provenance": "fixture-order reference run; identical to provisional baseline",
-  "query_groups": 50,
+  "benchmark_status": "frozen_adjudicated_synthetic",
+  "provenance": "current frozen human-gold reference run using Match Score",
+  "query_groups": 100,
   "candidates_per_group": 5,
   "metrics": {
-    "precision_at_5": 1,
+    "precision_at_5": 0.538,
     "recall_at_5": 1,
-    "ndcg_at_5": 1,
-    "mrr": 1
+    "ndcg_at_5": 0.9105,
+    "mrr": 0.7858
   },
-  "generated_by": "scripts/evaluate_ranking.py default candidate order",
-  "note": "Infrastructure smoke result, not empirical production performance."
+  "final_workbook_sha256": "ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e",
+  "generated_by": "frozen human-gold ranking evaluation using Match Score",
+  "production_authoritative": false,
+  "note": "Reference run for regression-gate plumbing; not live production ranker output."
 }

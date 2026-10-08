@@ -40,4 +40,4 @@ jobs:
 
       - name: Validate current public Lever application pages without submission
         run: |
-          python ../scripts/validate_real_ats.py             --url "https://jobs.lever.co/omnidian/e4bd2d30-9fb4-443f-a7c6-628851828074"             --url "https://jobs.lever.co/termgrid/11b495d2-f195-41d9-8389-159637db9fa1"
+          python ../scripts/validate_real_ats.py             --url "https://jobs.lever.co/Onehouse/47c14505-7b3e-4e6e-9e8d-04b41a8788a8"             --url "https://jobs.lever.co/Onehouse/2e0958a7-d86e-4b9e-9f81-b18bdf47f157"

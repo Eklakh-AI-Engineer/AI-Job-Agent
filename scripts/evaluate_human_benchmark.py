@@ -200,8 +200,10 @@ def main() -> int:
                 else int(round(as_float(raw_record[columns["ai_score"]]) / 100 * 3))
             )
             ai_score = as_float(raw_record[columns["ai_score"]]) if columns["ai_score"] else None
-            query_id = canonical_query_id(raw_record[columns["query_id"]])\n            if str(query_id).upper().startswith("EVAL-"):\n                query_id = job_id
             job_id = str(raw_record[columns["job_id"]]).strip()
+            query_id = canonical_query_id(raw_record[columns["query_id"]])
+            if str(query_id).upper().startswith("EVAL-"):
+                query_id = job_id
             if not query_id or not job_id:
                 raise ValueError("query_id and job_id are required")
         except (TypeError, ValueError) as exc:
@@ -229,7 +231,10 @@ def main() -> int:
     if errors:
         raise SystemExit("Benchmark parsing failed:\n" + "\n".join(errors[:20]))
 
-    if any(r["human_label"] not in {0, 1, 2, 3, 4} for r in records):\n        raise SystemExit("Human labels must use canonical ordinal values 0-4.")\n\n    y_true = [r["human_label"] for r in records]
+    if any(r["human_label"] not in {0, 1, 2, 3, 4} for r in records):
+        raise SystemExit("Human labels must use canonical ordinal values 0-4.")
+
+    y_true = [r["human_label"] for r in records]
     y_pred = [r["ai_label"] for r in records]
     precision, recall, f1 = macro_prf(y_true, y_pred)
     binary_true = [x > 1 for x in y_true]
@@ -267,10 +272,11 @@ def main() -> int:
         },
         "ranking": ranking_metrics(groups),
         "status": {
-            "human_verified": bool(args.promote),
-            "frozen": bool(args.promote),
+            "human_verified": False,
+            "frozen": False,
             "real_persisted_jobs": bool(args.real_persisted_jobs),
-            "validated": False,\n            "promotion_note": "Second-reviewer adjudication and final dataset freeze are required before promotion.",
+            "validated": False,
+            "promotion_note": "Second-reviewer adjudication and final dataset freeze are required before promotion.",
         },
     }
 

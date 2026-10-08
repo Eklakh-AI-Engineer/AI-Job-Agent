@@ -17,7 +17,7 @@ from app.services.evaluation_service import (
     evaluate_job_for_user,
 )
 from app.services.errors import JobNotFoundError
-from backend.evaluation.models import EvaluationResult
+from evaluation.models import EvaluationResult
 
 router = APIRouter(prefix="/evaluation", tags=["Evaluation"])
 

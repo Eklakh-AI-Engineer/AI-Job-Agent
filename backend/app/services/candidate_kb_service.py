@@ -17,9 +17,9 @@ from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.candidate_kb import CandidateKBRecord
-from backend.evaluation.candidate_loader import load_candidate_kb_from_dict
-from backend.evaluation.candidate_models import CandidateKB
-from backend.evaluation.models import DisclosureLevel
+from evaluation.candidate_loader import load_candidate_kb_from_dict
+from evaluation.candidate_models import CandidateKB
+from evaluation.models import DisclosureLevel
 
 logger = logging.getLogger(__name__)
 

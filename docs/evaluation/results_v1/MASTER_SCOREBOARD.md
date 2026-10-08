@@ -53,3 +53,17 @@ The generated CI artifact also contains:
 - `AI_Predictions_v1.jsonl`
 - `Evaluation_Results_v1.json`
 - `MASTER_SCOREBOARD.md`
+
+
+## Uploaded human-labeled ranking baseline (provisional)
+
+- Workbook SHA-256: `908597ca7e9a995fe83f0fc98d8ae608561543f6f71bdf51eed0cb7408a6ee92`
+- Ranking groups: 100 synthetic `JOB-*` groups × 5 candidates
+- Ranking by: `Match Score`
+- Precision@5: **0.5540**
+- Recall@5: **1.0000** (structurally saturated because k=5 and each group has five candidates)
+- nDCG@5: **0.9133**
+- MRR: **0.7908**
+- Status: **provisional human-labeled baseline; not production-authoritative**
+
+Production promotion remains blocked by second-reviewer adjudication and real persisted-job mapping.

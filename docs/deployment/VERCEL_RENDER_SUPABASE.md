@@ -1,65 +1,100 @@
-# Deployment Configuration
+# Vercel + Supabase Deployment
 
 ## Target v1 topology
 
 ```text
-Vercel (Next.js)
-       |
-       v
-Render Web -> FastAPI
-       |       |
-       |       +--> Redis
-       |
-       +----------> Supabase PostgreSQL + pgvector
-       |
-       +----------> Supabase Storage via the S3-compatible storage adapter
-       |
-       +----------> Render Celery worker
+GitHub
+  |
+  +--> Vercel (Next.js frontend)
+  |          |
+  |          +--> Vercel (FastAPI backend)
+  |                    |
+  |                    +--> Supabase PostgreSQL + pgvector
+  |                    +--> Supabase Storage
+  |
+  +--> GitHub Actions CI / regression gates
 ```
 
-## Render
+This is the portfolio/free-tier production profile. Redis/Celery remain in the
+repository for the full local/worker deployment profile, but they are not a
+mandatory production dependency for the Vercel API paths used by the v1 UI.
 
-`render.yaml` defines the API web service and Celery worker. The repository does
-not provision a managed Redis or database in the Blueprint because the intended
-v1 stack uses Supabase for PostgreSQL/pgvector and an externally managed Redis
-endpoint.
+## Vercel frontend
 
-Set these secrets/values in Render:
+The existing `frontend/` application is deployed as the `ai-job-agent` Vercel
+project. Set:
 
-- `DATABASE_URL`: Supabase PostgreSQL connection string.
-- `REDIS_URL`, `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND`: managed Redis URLs.
-- `CORS_ORIGINS`: the exact Vercel origin, with no wildcard.
-- `OPENAI_API_KEY`: server-side only.
-- `DOCUMENT_STORAGE_BACKEND=s3`, `DOCUMENT_STORAGE_BUCKET`, `DOCUMENT_STORAGE_ENDPOINT`,
-  `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`: server-side storage
-  configuration for the S3-compatible storage adapter.
+`NEXT_PUBLIC_API_URL=https://<backend-vercel-domain>`
 
-The API health endpoint is `/health`. The Docker entrypoint applies Alembic
-migrations before starting the selected process.
+Do not put database credentials, Supabase service-role keys, or other private
+secrets in `NEXT_PUBLIC_*` variables.
 
-## Vercel
+## Vercel FastAPI backend
 
-The `frontend/` directory is a standard Next.js application. Configure:
+Create a second Vercel project from the same GitHub repository:
 
-`NEXT_PUBLIC_API_URL=https://<render-api-host>`
+- Project name: `ai-job-agent-api`
+- Root Directory: `backend`
+- Framework: FastAPI
+- Production branch: `main`
 
-Do not put private keys or database credentials in `NEXT_PUBLIC_*` variables.
+`backend/main.py` is the Vercel entrypoint and imports the canonical
+`app.main:app`. The backend uses the existing `backend/requirements.txt`.
+
+Required production environment variables:
+
+- `APP_ENV=production`
+- `APP_DEBUG=false`
+- `USE_IN_CLUSTER_DATABASE=false`
+- `DATABASE_URL`: Supabase PostgreSQL connection string
+- `SECRET_KEY`: strong random secret
+- `JWT_SECRET`: strong random secret
+- `CORS_ORIGINS`: exact frontend origin, for example
+  `https://ai-job-agent-theta.vercel.app`
+- `OPENAI_API_KEY`: server-side only
+- `DOCUMENT_STORAGE_BACKEND=supabase`
+- `SUPABASE_URL`: the Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY`: server-side only
+- `DOCUMENT_STORAGE_BUCKET`: private storage bucket name
+- optional `DOCUMENT_STORAGE_PREFIX=documents`
+
+Redis/Celery variables are not required for the synchronous v1 API surface.
+The legacy `/test-task` endpoint is intentionally hidden from the production
+OpenAPI schema and should not be used as a production health check.
 
 ## Supabase
 
-Use Supabase PostgreSQL as the managed database and enable pgvector. Keep
-`USE_IN_CLUSTER_DATABASE=false` for this topology so the application uses the
-managed `DATABASE_URL` directly.
+Use the Supabase project as the system of record for:
 
-For generated PDF/DOCX artifacts, the existing storage abstraction can use an
-S3-compatible endpoint. Create a private bucket and keep server-side storage
-credentials out of the frontend.
+- PostgreSQL
+- pgvector
+- private document/artifact storage
 
-## Local vs production
+Run the repository's Alembic migrations against the Supabase database before
+the first production smoke test. The Vercel runtime does not use the Docker
+entrypoint, so migrations are not implicitly applied on function startup.
 
-- Local: Docker Compose PostgreSQL/Redis + local document storage.
-- Production: Render API/worker + Supabase PostgreSQL/Storage + managed Redis +
-  Vercel frontend.
-- Kubernetes remains an alternative deployment target; set
-  `USE_IN_CLUSTER_DATABASE=true` only when the database really is exposed as the
-  configured in-cluster service.
+Create a private Storage bucket matching `DOCUMENT_STORAGE_BUCKET`. The backend
+now includes a native Supabase Storage HTTP adapter, so no separate Redis or
+object-storage service is required.
+
+## Health and live QA
+
+Backend health endpoint:
+
+`https://<backend-vercel-domain>/health`
+
+Frontend live QA:
+
+`LIVE_API_URL=https://<backend-vercel-domain> npm run test:live`
+
+`FRONTEND_URL=https://ai-job-agent-theta.vercel.app npm run test:live:frontend`
+
+Production smoke tests must verify `/health`, authentication, database access,
+job listing, document artifact persistence, and the frontend-to-API path.
+
+## Full worker profile
+
+Local/Docker/Kubernetes deployments may continue to use Redis + Celery +
+Playwright for scheduled discovery and long-running browser automation. That
+profile is deliberately separate from the free Vercel/Supabase v1 deployment.

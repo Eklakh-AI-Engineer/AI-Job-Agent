@@ -19,8 +19,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import List, Optional
 
-from backend.evaluation.candidate_models import CandidateKB
-from backend.evaluation.models import DisclosureLevel, JobRequirements
+from evaluation.candidate_models import CandidateKB
+from evaluation.models import DisclosureLevel, JobRequirements
 
 
 @dataclass

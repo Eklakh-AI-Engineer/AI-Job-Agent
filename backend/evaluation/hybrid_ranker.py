@@ -10,14 +10,14 @@ from __future__ import annotations
 import re
 from typing import Dict, Tuple
 
-from backend.evaluation.candidate_models import CandidateKB
-from backend.evaluation.models import (
+from evaluation.candidate_models import CandidateKB
+from evaluation.models import (
     EligibilityStatus,
     EvaluationResult,
     JobRequirements,
     RoleMatchStatus,
 )
-from backend.evaluation.evaluator import evaluate_candidate_against_job
+from evaluation.evaluator import evaluate_candidate_against_job
 
 
 RANKING_VERSION = "hybrid-v1"
@@ -175,22 +175,22 @@ async def rank_candidate_job(job, candidate_kb: CandidateKB) -> Tuple[Evaluation
     priority = evaluation.priority
     recommendation = evaluation.recommendation
     if ranking_score >= 90:
-        from backend.evaluation.models import PriorityLevel
+        from evaluation.models import PriorityLevel
         priority = PriorityLevel.HIGH_PRIORITY
     elif ranking_score >= 80:
-        from backend.evaluation.models import PriorityLevel
+        from evaluation.models import PriorityLevel
         priority = PriorityLevel.STRONG
     elif ranking_score >= 70:
-        from backend.evaluation.models import PriorityLevel
+        from evaluation.models import PriorityLevel
         priority = PriorityLevel.REASONABLE
     elif ranking_score >= 60:
-        from backend.evaluation.models import PriorityLevel
+        from evaluation.models import PriorityLevel
         priority = PriorityLevel.REVIEW
     else:
-        from backend.evaluation.models import PriorityLevel
+        from evaluation.models import PriorityLevel
         priority = PriorityLevel.REJECT
 
-    from backend.evaluation.models import RecommendationStatus
+    from evaluation.models import RecommendationStatus
     if ranking_score >= 75 and evaluation.eligibility and evaluation.eligibility.status == EligibilityStatus.ELIGIBLE and evaluation.role_match and evaluation.role_match.status in (RoleMatchStatus.EXACT_MATCH, RoleMatchStatus.RELATED_MATCH):
         recommendation = RecommendationStatus.APPLY
     elif ranking_score >= 60:

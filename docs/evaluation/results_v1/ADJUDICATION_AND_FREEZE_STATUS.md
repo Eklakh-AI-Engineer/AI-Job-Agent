@@ -1,79 +1,74 @@
-# Human Label Adjudication & Benchmark Freeze Candidate v1
+# Human Label Adjudication & Benchmark Freeze Candidate v2
 
 **Source workbook:** `docs/evaluation/Human_Benchmark_Labeled_v1.xlsx`  
-**Source SHA-256:** `3723436be0cd843e57edf569a3661c551960f225ea7587ac1a71369909f9c5bc`  
-**Generated from CI run:** `37646085225`  
-**Commit audited:** `833fc942f3faeeb72cd2f5bab44e2034be3aca26`
+**Uploaded workbook SHA-256:** `908597ca7e9a995fe83f0fc98d8ae608561543f6f71bdf51eed0cb7408a6ee92`  
+**Rows:** 500  
+**Ranking groups:** 100 synthetic jobs × 5 candidates
 
-## 1. Label verification
+## Label verification
 
-Automated integrity checks passed:
+The workbook's `Benchmark Data` sheet contains 500 completed independent human annotations. The `Final Chosen Label` column matches the human annotation and is treated as the human annotation output.
 
-- 500/500 rows parsed successfully.
-- Human labels are restricted to the canonical ordinal set 0–3.
-- Human scores are numeric and bounded to 0–100.
-- No malformed human-label rows were detected.
-- Label distribution:
-  - 0: 133
-  - 1: 90
-  - 2: 227
-  - 3: 50
+The workbook uses a five-level ordinal rubric:
 
-### Independent adjudication status
+- 0 = No Match
+- 1 = Borderline
+- 2 = Weak Match
+- 3 = Match
+- 4 = Strong Match
 
-**NOT COMPLETED.**
+Reference/AI vs human annotation:
 
-The repository does not contain an independent second-reviewer/adjudicator record. The evaluator therefore does not promote the existing human labels to “human-gold”.
+- Exact agreement: **359/500 (71.8%)**
+- Disagreements requiring adjudication: **141/500**
+- Cohen's kappa: **0.595673**
+- Standard quadratic weighted kappa: **0.677025**
 
-The current run reports:
+The workbook's `Independent Analysis` sheet reports a quadratic weighted kappa of 0.8670. That figure is not reproduced by the repository's standard ordinal weighting implementation and is therefore not used as the authoritative statistic until its weighting methodology is reconciled.
 
-- AI/human exact agreement: 21.20%
-- Disagreements: 394/500
-- ±1 label agreement: 100%
-- Cohen's kappa: -0.0862
-- Quadratic weighted kappa: 0.4260
+## Ranking-group contract
 
-The 394 disagreements are preserved for human adjudication. They must not be auto-corrected from the AI prediction.
+`Evaluation ID` is row-level (`EVAL-0001` ... `EVAL-0500`) and must not be treated as a ranking query group.
 
-## 2. Real persisted-job mapping
+Each `Job ID` contains exactly five candidate rows, so the evaluator now falls back to `Job ID` as the ranking group when no explicit query-group identifier is available.
+
+## Independent adjudication
 
 **NOT COMPLETED.**
 
-The workbook contains only synthetic benchmark identifiers. There are 100 unique job IDs in the 500 rows, following the `JOB-001` … `JOB-100` pattern.
+The workbook contains one independent annotation pass. There is no second-reviewer/adjudication record for the 141 disagreement cases.
 
-No repository evidence currently proves that these IDs correspond to rows in the production `job_postings` persistence layer.
+The repository therefore does **not** mark the benchmark as human-gold or production-validated.
 
-Therefore:
+## Real persisted-job mapping
 
-- `real_persisted_jobs = false`
-- No synthetic ID has been promoted to a production job ID.
-- No label has been rewritten to force a database match.
+**NOT COMPLETED.**
 
-## 3. Candidate freeze
+The 100 job identifiers are synthetic `JOB-001` ... `JOB-100`. No repository evidence currently proves that they correspond to production `job_postings` records.
 
-The source workbook has an immutable content hash recorded above.
+## Freeze / promotion
 
-This is a **candidate freeze**, not a golden-benchmark freeze.
+The uploaded workbook is reproducible by SHA-256, but it is a **candidate human-labeled artifact**, not a production gold freeze.
 
-The benchmark may be reproduced exactly from the source workbook hash, but it is not promoted until:
+Promotion remains blocked until:
 
-1. A second human independently reviews/adjudicates the 394 disagreement cases.
-2. Adjudication decisions and rationales are recorded.
-3. Every benchmark job maps to a real persisted/discovered job record.
-4. Canonical query grouping is established.
-5. The adjudicated dataset is frozen and receives a new SHA-256.
-6. The promotion evaluator is run with both `--promote` and `--real-persisted-jobs`.
+1. A second human independently reviews/adjudicates all 141 disagreements.
+2. Decisions and rationales are recorded.
+3. Synthetic IDs are mapped to real persisted/discovered jobs.
+4. The adjudicated dataset is frozen with a final SHA-256.
+5. The real ranking baseline is generated from that frozen dataset.
+6. The regression gate is pointed at that authoritative baseline.
 
-## 4. Promotion status
+**Current state**
 
 ```yaml
-status: candidate_freeze
+status: provisional
 human_verified: false
 independent_adjudication: false
 real_persisted_jobs: false
 frozen: false
-source_hash_recorded: true
 production_ranking_baseline: false
+source_hash_recorded: true
 ```
 
-**Decision:** keep `golden_job_ranking_v1` provisional. Do not enable production ranking claims from this dataset.
+**Decision:** retain `golden_job_ranking_v1` as provisional. Do not claim production ranking quality from this benchmark yet.

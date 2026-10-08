@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "if [ -n \"$DATABASE_URL\" ]; then alembic upgrade head; else echo \"DATABASE_URL not set; skipping preview migration\"; fi",
+  "buildCommand": "python -m pip install -r requirements.txt && if [ -n \"$DATABASE_URL\" ]; then python -m alembic upgrade head; else echo \"DATABASE_URL not set; skipping preview migration\"; fi",
   "functions": {
     "main.py": {
       "maxDuration": 300

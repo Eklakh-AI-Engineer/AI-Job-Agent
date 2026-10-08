@@ -85,6 +85,70 @@ class LocalFilesystemStorage(DocumentStorage):
             return True
         return False
 
+class SupabaseStorage(DocumentStorage):
+    """Supabase Storage backend using the Storage HTTP API.
+
+    This avoids an additional object-storage service and keeps production
+    artifacts inside the user's Supabase project.
+    """
+
+    def __init__(self, bucket: str, supabase_url: str, service_role_key: str, prefix: str = "documents"):
+        self.bucket = bucket
+        self.supabase_url = supabase_url.rstrip("/")
+        self.service_role_key = service_role_key
+        self.prefix = prefix.strip("/")
+
+    def _path(self, key: str) -> str:
+        if key.startswith(("/", "\\")) or ".." in key.split("/"):
+            raise ValueError(f"Invalid storage key: {key}")
+        return f"{self.prefix}/{key}" if self.prefix else key
+
+    def _headers(self, content_type: str | None = None) -> dict[str, str]:
+        headers = {
+            "Authorization": f"Bearer {self.service_role_key}",
+            "apikey": self.service_role_key,
+        }
+        if content_type:
+            headers["Content-Type"] = content_type
+        return headers
+
+    def _url(self, key: str) -> str:
+        from urllib.parse import quote
+        return f"{self.supabase_url}/storage/v1/object/{quote(self.bucket, safe='')}/{quote(self._path(key), safe='/')}"
+
+    async def put_bytes(self, key: str, content: bytes, content_type: str = "application/octet-stream") -> str:
+        import httpx
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(self._url(key), content=content, headers=self._headers(content_type))
+            if response.status_code == 409:
+                response = await client.put(self._url(key), content=content, headers=self._headers(content_type))
+            response.raise_for_status()
+        return self._path(key)
+
+    async def put(self, key: str, content: str, content_type: str = "text/plain") -> str:
+        return await self.put_bytes(key, content.encode("utf-8"), content_type)
+
+    async def get_bytes(self, key: str) -> Optional[bytes]:
+        import httpx
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(self._url(key), headers=self._headers())
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.content
+
+    async def get(self, key: str) -> Optional[str]:
+        payload = await self.get_bytes(key)
+        return payload.decode("utf-8") if payload is not None else None
+
+    async def delete(self, key: str) -> bool:
+        import httpx
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.delete(self._url(key), headers=self._headers())
+            if response.status_code == 404:
+                return False
+            response.raise_for_status()
+            return True
 
 class S3Storage(DocumentStorage):
     """S3-compatible object storage."""
@@ -187,7 +251,22 @@ def get_document_storage() -> DocumentStorage:
         return _storage
 
     backend = os.getenv("DOCUMENT_STORAGE_BACKEND", "local").lower()
-    if backend == "s3":
+    if backend == "supabase":
+        bucket = os.getenv("DOCUMENT_STORAGE_BUCKET")
+        supabase_url = os.getenv("SUPABASE_URL")
+        service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        if not bucket or not supabase_url or not service_role_key:
+            raise ValueError(
+                "DOCUMENT_STORAGE_BUCKET, SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
+                "are required for Supabase storage"
+            )
+        _storage = SupabaseStorage(
+            bucket=bucket,
+            supabase_url=supabase_url,
+            service_role_key=service_role_key,
+            prefix=os.getenv("DOCUMENT_STORAGE_PREFIX", "documents"),
+        )
+    elif backend == "s3":
         bucket = os.getenv("DOCUMENT_STORAGE_BUCKET")
         if not bucket:
             raise ValueError("DOCUMENT_STORAGE_BUCKET is required for S3 storage")

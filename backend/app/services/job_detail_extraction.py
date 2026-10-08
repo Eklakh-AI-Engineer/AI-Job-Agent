@@ -12,7 +12,10 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from playwright.async_api import Page
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from playwright.async_api import Page
 
 from app.core.ssrf import validate_public_url
 

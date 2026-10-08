@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Optional, List
 from datetime import datetime, timezone
-from backend.jobs.models import Job as LegacyJob
+from jobs.models import Job as LegacyJob
 from app.models.job import JobPosting
 
 

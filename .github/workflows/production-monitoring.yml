@@ -38,16 +38,16 @@ jobs:
           case "$FRONTEND_URL" in https://*) ;; *) echo "::error::FRONTEND_URL must start with https://"; exit 1 ;; esac
       - name: Backend health
         env:
-          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL }}
+          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL || 'https://ai-job-agent-api-mu.vercel.app' }}
         run: |
           curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/health"
       - name: Backend metrics
         env:
-          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL }}
+          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL || 'https://ai-job-agent-api-mu.vercel.app' }}
         run: |
           curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/metrics" | grep -q "http_requests_total"
       - name: Frontend shell
         env:
-          FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL }}
+          FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL || 'https://ai-job-agent-theta.vercel.app' }}
         run: |
           curl --fail --silent --show-error --max-time 20 "$FRONTEND_URL/" | grep -qi "<html"

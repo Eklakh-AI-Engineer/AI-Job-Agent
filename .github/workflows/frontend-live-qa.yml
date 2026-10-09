@@ -43,7 +43,7 @@ jobs:
           fi
           case "$LIVE_API_URL" in https://*) ;; *) echo "::error::LIVE_API_URL must start with https://"; exit 1 ;; esac
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run live API smoke tests
         run: npm run test:live
 
@@ -70,6 +70,6 @@ jobs:
           fi
           case "$FRONTEND_URL" in https://*) ;; *) echo "::error::FRONTEND_URL must start with https://"; exit 1 ;; esac
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run live frontend smoke test
         run: npm run test:live:frontend

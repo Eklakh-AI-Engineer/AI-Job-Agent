@@ -88,16 +88,20 @@ jobs:
             --manifest /tmp/benchmark-manifest.json
 
   evaluation-gate:
-    name: Ranking regression gate
+    name: Synthetic benchmark reference comparison (non-production)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Enforce ranking regression gate
+      - name: Compare frozen synthetic reference metrics (plumbing only)
         shell: bash
         run: |
           test -f docs/evaluation/baseline.json
           test -f docs/evaluation/latest.json
-          python scripts/ranking_regression_gate.py             --baseline docs/evaluation/baseline.json             --latest docs/evaluation/latest.json             --policy docs/evaluation/regression_policy.json
+          python scripts/ranking_regression_gate.py \
+            --baseline docs/evaluation/baseline.json \
+            --latest docs/evaluation/latest.json \
+            --policy docs/evaluation/regression_policy.json \
+            --allow-non-production-baseline
 
 
   human-benchmark:

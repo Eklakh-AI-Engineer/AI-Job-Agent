@@ -17,6 +17,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/production-monitoring.yml"
+      - "backend/app/core/config.py"
+      - "backend/app/core/database.py"
 
 permissions:
   contents: read

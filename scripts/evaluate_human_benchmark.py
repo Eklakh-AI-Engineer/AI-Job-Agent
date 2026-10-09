@@ -42,6 +42,14 @@ def norm(value: Any) -> str:
 
 def pick(headers: list[str], key: str) -> str | None:
     normalized = {norm(h): h for h in headers}
+    # Prefer adjudicated gold over the original first-pass human annotation.
+    preferred = {
+        "human_label": ("finalgoldlabel", "finalchosenlabel", "adjudicatedlabel", "humanlabel", "humanrelevance", "humanmatchlabel", "goldlabel"),
+        "human_score": ("finalgoldscore", "finalchosenscore", "humanscore", "humanrelevancescore", "humanmatchscore"),
+    }
+    for alias in preferred.get(key, ()):
+        if alias in normalized:
+            return normalized[alias]
     if key in normalized:
         return normalized[key]
     for alias in ALIASES.get(key, ()):

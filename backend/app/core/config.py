@@ -83,6 +83,19 @@ class Settings(BaseSettings):
             for key, value in query
         ]
 
+        # Supabase transaction-mode PgBouncer can reuse server connections
+        # across clients. Disable SQLAlchemy's asyncpg prepared-statement cache
+        # as well as asyncpg's own statement cache (configured in database.py).
+        # Without both settings, concurrent health checks can intermittently fail
+        # with DuplicatePreparedStatementError even when the database is healthy.
+        if parsed.port == 6543:
+            query = [
+                (key, value)
+                for key, value in query
+                if key != "prepared_statement_cache_size"
+            ]
+            query.append(("prepared_statement_cache_size", "0"))
+
         return urlunparse((
             scheme,
             parsed.netloc,

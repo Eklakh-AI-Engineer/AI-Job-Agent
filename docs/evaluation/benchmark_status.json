@@ -33,5 +33,11 @@
     "Strong Match": 30
   },
   "production_ranking_baseline": false,
-  "promotion_blocked_reason": "The adjudicated benchmark is frozen and human-verified, but JOB-001..JOB-100 remain synthetic and are not proven to map to persisted production jobs. Therefore this is not yet the production-authoritative ranking baseline."
+  "promotion_blocked_reason": "The adjudicated benchmark is frozen and human-verified, but JOB-001..JOB-100 remain synthetic and are not proven to map to persisted production jobs. Therefore this is not yet the production-authoritative ranking baseline.",
+  "final_gold_artifact_committed_to_repository": false,
+  "final_gold_artifact_repository_path": null,
+  "ci_evaluator_input": "docs/evaluation/Human_Benchmark_Labeled_v1.xlsx",
+  "ci_evaluator_input_sha256": "908597ca7e9a995fe83f0fc98d8ae608561543f6f71bdf51eed0cb7408a6ee92",
+  "ci_evaluator_input_is_final_frozen_artifact": false,
+  "production_authoritative": false
 }

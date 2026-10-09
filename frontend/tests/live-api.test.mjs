@@ -82,7 +82,7 @@ test("authenticated production smoke and sanitized persisted-job export", {
       production_authoritative: false,
       note: "Sanitized metadata export; review and map IDs before benchmark promotion.",
       jobs: sanitizedJobs,
-    }, null, 2) + "\\n", { encoding: "utf-8", mode: 0o600 });
+    }, null, 2) + "\n", { encoding: "utf-8", mode: 0o600 });
   }
   console.log(`authenticated production smoke passed; persisted jobs exported: ${sanitizedJobs.length}`);
 });

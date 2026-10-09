@@ -29,7 +29,7 @@ The repository is in the **v1 completion and validation phase**. The implementat
 | Mock ATS E2E | 🟢 Implemented |
 | Backend true-pipeline E2E | 🟢 Implemented |
 | Frontend build/type/unit CI | 🟢 Implemented |
-| Frontend live integration smoke tests | 🟠 Basic live smoke passed; expanded checks exposed an intermittent PgBouncer/asyncpg health issue, fix deployed/revalidation pending |
+| Frontend live integration smoke tests | 🟢 Five consecutive database health probes, auth-boundary checks, job-route protection, and frontend shell smoke passed |
 | SSRF / upload security controls | 🟢 Implemented |
 | Prometheus + structured logging | 🟢 Implemented |
 | Production deployment configuration | 🟢 Implemented for Vercel + Render + Supabase topology |

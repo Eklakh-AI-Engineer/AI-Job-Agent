@@ -2,6 +2,15 @@ name: Production monitoring smoke
 
 on:
   workflow_dispatch:
+    inputs:
+      api_url:
+        description: "Optional HTTPS API URL override (otherwise LIVE_API_URL secret is used)"
+        required: false
+        type: string
+      frontend_url:
+        description: "Optional HTTPS frontend URL override (otherwise FRONTEND_URL secret is used)"
+        required: false
+        type: string
   schedule:
     - cron: "17 */6 * * *"
 
@@ -14,14 +23,18 @@ jobs:
     steps:
       - name: Validate production URLs are configured
         env:
-          LIVE_API_URL: ${{ secrets.LIVE_API_URL }}
-          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL }}
+          FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL }}
         run: |
-          test -n "$LIVE_API_URL"
-          test -n "$FRONTEND_URL"
+          if [ -z "$LIVE_API_URL" ] || [ -z "$FRONTEND_URL" ]; then
+            echo "::error::Production monitoring is not configured. Add Actions secrets LIVE_API_URL and FRONTEND_URL, or supply both HTTPS URLs when manually dispatching this workflow."
+            exit 1
+          fi
+          case "$LIVE_API_URL" in https://*) ;; *) echo "::error::LIVE_API_URL must start with https://"; exit 1 ;; esac
+          case "$FRONTEND_URL" in https://*) ;; *) echo "::error::FRONTEND_URL must start with https://"; exit 1 ;; esac
       - name: Backend health
         env:
-          LIVE_API_URL: ${{ secrets.LIVE_API_URL }}
+          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL }}
         run: |
           curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/health"
       - name: Backend metrics
@@ -31,6 +44,6 @@ jobs:
           curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/metrics" | grep -q "http_requests_total"
       - name: Frontend shell
         env:
-          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL }}
         run: |
           curl --fail --silent --show-error --max-time 20 "$FRONTEND_URL/" | grep -qi "<html"

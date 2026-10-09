@@ -17,15 +17,15 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 
-REQUIRED_COLUMNS = {
-    "benchmark_job_id",
-    "persisted_job_id",
-    "persisted_job_title",
-    "persisted_company",
-    "persisted_url",
-    "source_table",
-    "verified_at_utc",
-    "source_export_sha256",
+COLUMN_MAP = {
+    "benchmark_job_id": "benchmarkjobid",
+    "persisted_job_id": "persistedjobid",
+    "persisted_job_title": "persistedjobtitle",
+    "persisted_company": "persistedcompany",
+    "persisted_url": "persistedurl",
+    "source_table": "sourcetable",
+    "verified_at_utc": "verifiedatutc",
+    "source_export_sha256": "sourceexportsha256",
 }
 
 
@@ -70,11 +70,14 @@ def main() -> int:
         with args.mapping.open(newline="", encoding="utf-8-sig") as handle:
             reader = csv.DictReader(handle)
             headers = {norm(name): name for name in (reader.fieldnames or [])}
-            missing = REQUIRED_COLUMNS - set(headers)
+            missing = set(COLUMN_MAP.values()) - set(headers)
             if missing:
                 raise ValueError("mapping columns missing: " + ", ".join(sorted(missing)))
             rows = [
-                {key: (row.get(headers[key]) or "").strip() for key in REQUIRED_COLUMNS}
+                {
+                    field: (row.get(headers[normalized]) or "").strip()
+                    for field, normalized in COLUMN_MAP.items()
+                }
                 for row in reader
             ]
         if not rows:

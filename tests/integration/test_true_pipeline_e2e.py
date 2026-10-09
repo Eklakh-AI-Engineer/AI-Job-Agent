@@ -21,8 +21,8 @@ from app.services.job_service import create_job
 from app.services.browser_automation_service import submit_application
 from app.services.document_storage import LocalFilesystemStorage, get_document_storage, set_document_storage
 from app.agents.application_bot import SubmissionResult
-from backend.evaluation.candidate_loader import load_candidate_kb_from_dir
-from backend.evaluation.hybrid_ranker import rank_candidate_job
+from evaluation.candidate_loader import load_candidate_kb_from_dir
+from evaluation.hybrid_ranker import rank_candidate_job
 
 
 @pytest.mark.e2e

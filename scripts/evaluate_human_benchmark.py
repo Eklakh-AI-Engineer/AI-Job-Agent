@@ -268,6 +268,7 @@ def main() -> int:
             "query_groups": len(groups),
             "human_labels_present": True,
             "human_label_column_selected": selected_human_label_header,
+            "final_gold_column_present": has_final_gold,
         },
         "classification": {
             "accuracy": round(safe_div(sum(a == p for a, p in zip(y_true, y_pred)), len(records)), 4),
@@ -286,15 +287,15 @@ def main() -> int:
         },
         "ranking": ranking_metrics(groups),
         "status": {
-            "human_verified": has_final_gold,
+            "human_verified": frozen_final_gold,
             "frozen": frozen_final_gold,
             "real_persisted_jobs": False,
             "production_authoritative": False,
             "validated": False,
             "promotion_note": (
                 "Human-gold labels are selected, but production promotion is blocked until real persisted-job mapping and runtime-ranker baseline evidence exist."
-                if has_final_gold
-                else "This workbook does not contain the adjudicated Final Gold Label column; the evaluator fell back to first-pass labels. Use the frozen Human_Gold_Final_v1 artifact before claiming human-verified benchmark results."
+                if frozen_final_gold
+                else "The workbook is not the exact frozen Human_Gold_Final_v1 artifact (or lacks its Final Gold Label column). Treat these metrics as diagnostic only and do not claim human-verified benchmark results."
             ),
         },
     }

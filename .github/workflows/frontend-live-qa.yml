@@ -1,6 +1,10 @@
 name: Frontend Live Integration QA
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/frontend-live-qa.yml"
   workflow_dispatch:
     inputs:
       api_url:
@@ -23,7 +27,7 @@ jobs:
       run:
         working-directory: frontend
     env:
-      LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL }}
+      LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL || 'https://ai-job-agent-api-mu.vercel.app' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,7 +38,7 @@ jobs:
       - name: Validate live API URL
         run: |
           if [ -z "$LIVE_API_URL" ]; then
-            echo "::error::Set Actions secret LIVE_API_URL or provide api_url in workflow_dispatch."
+            echo "::error::Set a verified API URL in the Actions secret or workflow_dispatch input."
             exit 1
           fi
           case "$LIVE_API_URL" in https://*) ;; *) echo "::error::LIVE_API_URL must start with https://"; exit 1 ;; esac
@@ -50,7 +54,7 @@ jobs:
       run:
         working-directory: frontend
     env:
-      FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL }}
+      FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL || 'https://ai-job-agent-theta.vercel.app' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -61,7 +65,7 @@ jobs:
       - name: Validate frontend URL
         run: |
           if [ -z "$FRONTEND_URL" ]; then
-            echo "::error::Set Actions secret FRONTEND_URL or provide frontend_url in workflow_dispatch."
+            echo "::error::Set a verified frontend URL in the Actions secret or workflow_dispatch input."
             exit 1
           fi
           case "$FRONTEND_URL" in https://*) ;; *) echo "::error::FRONTEND_URL must start with https://"; exit 1 ;; esac

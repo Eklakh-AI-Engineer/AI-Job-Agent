@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/frontend-live-qa.yml"
+      - "frontend/tests/live-api.test.mjs"
+      - "frontend/tests/live-frontend.test.mjs"
+      - "frontend/package.json"
+      - "frontend/package-lock.json"
   workflow_dispatch:
     inputs:
       api_url:

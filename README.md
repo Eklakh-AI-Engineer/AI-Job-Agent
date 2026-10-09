@@ -35,7 +35,7 @@ The repository is in the **v1 completion and validation phase**. The implementat
 | Production deployment configuration | 🟢 Implemented for Vercel + Render + Supabase topology |
 | Real ATS dry-run evidence | 🟠 Requires live browser execution |
 | Human-verified ranking benchmark | 🟠 Requires human review |
-| Production deployment | 🟠 Requires external service credentials |
+| Production deployment | 🟠 Vercel frontend/API deployed; basic health smoke passes; authenticated workflows, authoritative ranking baseline, and restore validation remain pending |
 
 **Important:** source code being present is not treated as validation. A capability is considered validated only when its tests, failure paths, runtime evidence and documentation agree.
 
@@ -149,14 +149,20 @@ See [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Deployment
 
-The intended low-cost portfolio deployment is:
+### Observed live deployment (2026-10-09)
 
-- **Vercel** — Next.js frontend;
-- **Render** — FastAPI web service + Celery worker;
-- **Supabase** — PostgreSQL + pgvector + Storage;
-- **Managed Redis** — broker/result backend.
+- **Vercel frontend:** `https://ai-job-agent-theta.vercel.app`
+- **Vercel FastAPI API:** `https://ai-job-agent-api-mu.vercel.app`
+- **Database:** the live `/health` response reported `database=healthy`.
+- **Monitoring:** backend health, Prometheus metrics, and frontend shell smoke passed in [run 37879029230](https://github.com/Eklakh-AI-Engineer/AI-Job-Agent/actions/runs/37879029230).
 
-The repository includes `render.yaml` and deployment documentation. Production secrets and service-specific credentials must be configured outside Git.
+This proves deployment and basic health, not full production readiness. Authenticated user workflows, real persisted-job benchmark mapping, production ranking regression, and database/storage restore remain release gates.
+
+### Documented target topology
+
+The repository also includes a Render + managed Redis configuration for a FastAPI web service and Celery worker, with Supabase PostgreSQL/pgvector/Storage. That topology is a documented deployment option; the observed live API above is currently hosted on Vercel. Do not claim the Render worker is live without separate deployment evidence.
+
+The repository includes `render.yaml` and deployment documentation. Production secrets must remain outside Git.
 
 ## Engineering principles
 

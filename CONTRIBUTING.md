@@ -77,3 +77,14 @@ Include OS, Python version, browser (if applicable), steps to reproduce, expecte
 
 ---
 Thank you for contributing! 🚀
+
+
+## AI Job Agent release and evidence rules
+
+- Read [the documentation index](docs/DOCUMENTATION_INDEX.md), [release runbook](docs/operations/RELEASE_RUNBOOK.md), and the latest dated release audit before release-related changes.
+- Run the applicable tests; report checks that are blocked or skipped rather than calling them passed.
+- Keep the frozen benchmark artifact byte-for-byte stable. Reconcile SHA-256 and provenance before using it in CI; never overwrite adjudicated labels with a provisional workbook.
+- Synthetic benchmark IDs must not be guessed into production IDs. Use an authorized read-only export, preserve its SHA-256, and independently review mappings.
+- Production ranking metrics must come from the runtime ranker over verified persisted jobs. Do not promote a baseline by manually editing an authority flag.
+- Preserve historical audit reports as evidence snapshots. Correct current status with explicit evidence rather than rewriting history.
+- Never commit production secrets, raw resumes, personal data, or unredacted production logs.

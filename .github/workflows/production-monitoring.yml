@@ -13,6 +13,10 @@ on:
         type: string
   schedule:
     - cron: "17 */6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/production-monitoring.yml"
 
 permissions:
   contents: read
@@ -23,11 +27,11 @@ jobs:
     steps:
       - name: Validate production URLs are configured
         env:
-          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL }}
-          FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL }}
+          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL || 'https://ai-job-agent-api-mu.vercel.app' }}
+          FRONTEND_URL: ${{ inputs.frontend_url || secrets.FRONTEND_URL || 'https://ai-job-agent-theta.vercel.app' }}
         run: |
           if [ -z "$LIVE_API_URL" ] || [ -z "$FRONTEND_URL" ]; then
-            echo "::error::Production monitoring is not configured. Add Actions secrets LIVE_API_URL and FRONTEND_URL, or supply both HTTPS URLs when manually dispatching this workflow."
+            echo "::error::Production monitoring requires verified HTTPS URLs. Supply them as Actions secrets or manual workflow inputs."
             exit 1
           fi
           case "$LIVE_API_URL" in https://*) ;; *) echo "::error::LIVE_API_URL must start with https://"; exit 1 ;; esac

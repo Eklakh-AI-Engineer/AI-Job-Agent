@@ -9,6 +9,9 @@ on:
       - "frontend/tests/live-frontend.test.mjs"
       - "frontend/package.json"
       - "frontend/package-lock.json"
+      - "backend/app/core/config.py"
+      - "backend/app/core/database.py"
+      - "tests/unit/test_config.py"
   workflow_dispatch:
     inputs:
       api_url:

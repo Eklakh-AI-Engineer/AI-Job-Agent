@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -29,6 +30,7 @@ from app.agents.ats_config import resolve_ats
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", action="append", required=True)
+    parser.add_argument("--output", type=Path, help="Optional JSON evidence output path")
     return parser.parse_args()
 
 
@@ -70,9 +72,18 @@ async def validate(url: str) -> dict:
 
 
 async def main() -> int:
-    results = [await validate(url) for url in parse_args().url]
-    for result in results:
-        print(result)
+    args = parse_args()
+    results = [await validate(url) for url in args.url]
+    evidence = {
+        "mode": "dry_run_only",
+        "external_submission_attempted": False,
+        "results": results,
+    }
+    rendered = json.dumps(evidence, indent=2, sort_keys=True) + "\\n"
+    print(rendered, end="")
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(rendered, encoding="utf-8")
     return 0 if all(r["success"] and r["dry_run"] for r in results) else 1
 
 

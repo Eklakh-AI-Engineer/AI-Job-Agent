@@ -23,3 +23,15 @@
 
 ## Evidence
 Record timestamp, deployment SHA, API URL, frontend URL, test account identifier (never password), HTTP status, and screenshots/log references. Do not commit secrets.
+
+
+## Observed evidence — 2026-10-09
+
+The verified production aliases are:
+
+- Frontend: `https://ai-job-agent-theta.vercel.app`
+- API: `https://ai-job-agent-api-mu.vercel.app`
+
+[Production monitoring run 37879029230](https://github.com/Eklakh-AI-Engineer/AI-Job-Agent/actions/runs/37879029230) passed `/health` (`status=ok`, `database=healthy`), `/metrics` (Prometheus metric present), and frontend HTML shell checks. [Live QA run 37879071209](https://github.com/Eklakh-AI-Engineer/AI-Job-Agent/actions/runs/37879071209) passed two API checks and one frontend shell check.
+
+**Still unverified:** authenticated profile/job-listing reads, candidate-KB persistence, ranking response/version, document generation and artifact persistence, approval lifecycle, and restore validation. The current live QA suite does not exercise these authenticated workflows because a disposable production test account/credential pair has not been configured. Do not create a permanent production test account without an explicit cleanup plan.

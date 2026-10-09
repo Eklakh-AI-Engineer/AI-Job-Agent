@@ -137,3 +137,20 @@ def test_kubernetes_can_explicitly_use_internal_database():
         cors_origins="https://app.example.com",
     )
     assert "@postgres:5432/" in settings.effective_database_url
+
+
+def test_supabase_transaction_pooler_disables_prepared_statement_cache():
+    settings = Settings(
+        app_env="production",
+        database_url=(
+            "postgresql://postgres.project:pass@aws-0-region.pooler.supabase.com:6543/"
+            "postgres?sslmode=require&prepared_statement_cache_size=100"
+        ),
+        secret_key="real-secret",
+        jwt_secret="real-jwt-secret",
+        cors_origins="https://app.example.com",
+    )
+    url = settings.effective_database_url
+    assert "prepared_statement_cache_size=0" in url
+    assert "prepared_statement_cache_size=100" not in url
+    assert "ssl=require" in url

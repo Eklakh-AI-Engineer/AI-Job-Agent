@@ -56,7 +56,8 @@ def test_adjudicated_final_gold_label_takes_precedence(tmp_path, monkeypatch):
         for line in (out / "AI_Predictions_v1.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert [row["human_label"] for row in predictions] == [0, 4]
-    assert evaluation["status"]["human_verified"] is True
+    assert evaluation["status"]["human_verified"] is False
     assert evaluation["status"]["frozen"] is False
+    assert evaluation["dataset"]["final_gold_column_present"] is True
     assert evaluation["status"]["production_authoritative"] is False
     assert evaluation["dataset"]["human_label_column_selected"] == "Final Gold Label"

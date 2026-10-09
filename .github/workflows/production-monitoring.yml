@@ -39,7 +39,7 @@ jobs:
           curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/health"
       - name: Backend metrics
         env:
-          LIVE_API_URL: ${{ secrets.LIVE_API_URL }}
+          LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL }}
         run: |
           curl --fail --silent --show-error --max-time 20 "$LIVE_API_URL/metrics" | grep -q "http_requests_total"
       - name: Frontend shell

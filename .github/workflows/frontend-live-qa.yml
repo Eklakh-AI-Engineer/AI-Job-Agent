@@ -35,6 +35,9 @@ jobs:
         working-directory: frontend
     env:
       LIVE_API_URL: ${{ inputs.api_url || secrets.LIVE_API_URL || 'https://ai-job-agent-api-mu.vercel.app' }}
+      LIVE_QA_EMAIL: ${{ secrets.LIVE_QA_EMAIL }}
+      LIVE_QA_PASSWORD: ${{ secrets.LIVE_QA_PASSWORD }}
+      JOB_EXPORT_PATH: ../artifacts/live-qa/production-jobs.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,8 +54,21 @@ jobs:
           case "$LIVE_API_URL" in https://*) ;; *) echo "::error::LIVE_API_URL must start with https://"; exit 1 ;; esac
       - name: Install dependencies
         run: npm ci
+      - name: Explain authenticated smoke prerequisites
+        if: env.LIVE_QA_EMAIL == '' || env.LIVE_QA_PASSWORD == ''
+        run: echo '::warning::Authenticated production smoke is skipped until LIVE_QA_EMAIL and LIVE_QA_PASSWORD repository secrets are configured.'
       - name: Run live API smoke tests
-        run: npm run test:live
+        run: |
+          mkdir -p ../artifacts/live-qa
+          npm run test:live
+      - name: Upload sanitized production job export
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitized-production-job-export
+          path: artifacts/live-qa/production-jobs.json
+          if-no-files-found: warn
+          retention-days: 30
 
   live-frontend:
     name: Live frontend shell smoke

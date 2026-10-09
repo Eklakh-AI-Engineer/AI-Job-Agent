@@ -167,7 +167,6 @@ def main() -> int:
     parser.add_argument("workbook", type=Path)
     parser.add_argument("--output-dir", type=Path, default=Path("docs/evaluation/results_v1"))
     parser.add_argument("--promote", action="store_true")
-    parser.add_argument("--real-persisted-jobs", action="store_true")
     args = parser.parse_args()
 
     if not args.workbook.exists():
@@ -320,6 +319,10 @@ def main() -> int:
         f"- Rows evaluated: {len(records)}",
         f"- Query groups: {len(groups)}",
         f"- Workbook SHA-256: {workbook_sha}",
+        f"- Human-label column selected: {selected_human_label_header}",
+        f"- Human-gold verified: {evaluation[\"status\"][\"human_verified\"]}",
+        f"- Frozen final artifact: {evaluation[\"status\"][\"frozen\"]}",
+        f"- Production authoritative: {evaluation[\"status\"][\"production_authoritative\"]}",
         "",
         "## Matching / Classification",
         f"- Accuracy: {evaluation['classification']['accuracy']:.4f}",
@@ -342,7 +345,8 @@ def main() -> int:
     scoreboard.extend([
         "",
         "## Promotion gate",
-        "- Human labels must be independently reviewed.",
+        "- Use Final Gold Label (not first-pass Human Label) when available.",
+        "- Human labels must be independently reviewed and the final workbook hash must match the freeze manifest.",
         "- The benchmark must be frozen and its SHA-256 recorded.",
         "- Job IDs must map to real persisted/discovered jobs before production validation.",
         "- Do not describe provisional results as production quality.",

@@ -1,0 +1,44 @@
+name: Production Ranking Regression Gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-ranking:
+    name: Enforce production-authoritative ranking baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Require authoritative baseline and compare runtime metrics
+        shell: bash
+        run: |
+          set +e
+          python scripts/ranking_regression_gate.py \
+            --baseline docs/evaluation/baseline.json \
+            --latest docs/evaluation/latest.json \
+            --policy docs/evaluation/regression_policy.json 2>&1 | tee production-ranking-gate.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -eq 2 ]; then
+            echo "## Production ranking gate: BLOCKED" >> "$GITHUB_STEP_SUMMARY"
+            echo "The baseline is not production-authoritative. Map the adjudicated benchmark to real persisted jobs and publish runtime-ranker metrics before release." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$status" -eq 1 ]; then
+            echo "## Production ranking gate: REGRESSION" >> "$GITHUB_STEP_SUMMARY"
+            echo "One or more ranking metrics fell below the configured tolerance." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$status" -eq 0 ]; then
+            echo "## Production ranking gate: PASSED" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"
+      - name: Preserve gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-ranking-gate-evidence
+          path: production-ranking-gate.log
+          if-no-files-found: warn
+          retention-days: 90

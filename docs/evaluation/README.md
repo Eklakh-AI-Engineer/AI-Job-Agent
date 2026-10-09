@@ -42,3 +42,16 @@ The repository contains scripts/evaluate_ranking.py for benchmark metrics and sc
 The regression gate is enabled against the frozen human-gold reference artifacts. It is **not yet a production-quality gate** because the benchmark job IDs are synthetic.
 
 Required metrics: precision_at_5, recall_at_5, ndcg_at_5, and mrr.
+
+
+## Production promotion contract (2026-10-09)
+
+The committed `baseline.json` and `latest.json` are frozen synthetic/reference metrics. They are not production-authoritative ranking results.
+
+- `scripts/ranking_regression_gate.py` rejects non-authoritative inputs by default.
+- `.github/workflows/ci.yml` uses `--allow-non-production-baseline` only for synthetic/reference plumbing; its green status is not a production ranking pass.
+- `.github/workflows/production-ranking-regression.yml` is the manual release gate. It must pass against files marked `production_authoritative: true` and the same frozen dataset hash and `ranking_version`.
+- `scripts/validate_job_mapping.py` validates a mapping CSV against every unique benchmark Job ID. It emits a manifest marked `production_authoritative: false` because schema validation alone cannot authenticate the source database.
+- Template: `docs/evaluation/real_job_mapping_template.csv`.
+
+Before promotion, export the production `job_postings` records, review each mapping, record the source-export SHA-256, generate runtime-ranker metrics over the mapped benchmark, and preserve the run output. Do not set `production_authoritative: true` based solely on a hand-edited JSON flag.

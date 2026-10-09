@@ -40,4 +40,17 @@ jobs:
 
       - name: Validate current public Lever application pages without submission
         run: |
-          python ../scripts/validate_real_ats.py             --url "https://jobs.lever.co/Onehouse/47c14505-7b3e-4e6e-9e8d-04b41a8788a8"             --url "https://jobs.lever.co/Onehouse/2e0958a7-d86e-4b9e-9f81-b18bdf47f157"
+          mkdir -p ../artifacts/real-ats
+          python ../scripts/validate_real_ats.py \
+            --url "https://jobs.lever.co/Onehouse/47c14505-7b3e-4e6e-9e8d-04b41a8788a8" \
+            --url "https://jobs.lever.co/Onehouse/2e0958a7-d86e-4b9e-9f81-b18bdf47f157" \
+            --output ../artifacts/real-ats/dry-run-results.json
+
+      - name: Upload ATS dry-run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-ats-dry-run-evidence
+          path: artifacts/real-ats/dry-run-results.json
+          if-no-files-found: warn
+          retention-days: 90

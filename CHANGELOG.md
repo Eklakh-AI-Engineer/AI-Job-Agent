@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/); this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+### Release readiness and documentation (2026-10-09)
+- Added a canonical documentation index and clarified contribution/release evidence requirements.
+- Corrected README and release-runbook wording: the CI workbook exists, but its recorded SHA-256 differs from the final adjudicated artifact hash.
+- Production ranking certification remains blocked until real persisted-job mappings and runtime-ranker evidence are available.
 ### Added
 - Phase 1 repository foundation: governance files, tooling, CI/CD, Docker, docs skeleton, test scaffolding, monitoring config.
 

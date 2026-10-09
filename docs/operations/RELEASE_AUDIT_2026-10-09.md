@@ -4,7 +4,7 @@
 
 **Release status: BLOCKED — do not tag v1.0.0 yet.**
 
-The repository has meaningful code/CI evidence, but the current benchmark source, live environment configuration, production database mapping, deployment, and restore validation do not support a production-ready claim. This document records observed evidence, not intended capabilities.
+The repository now has passing CI, basic live API/frontend QA, repeated healthy database probes, and real ATS dry-run evidence. Release is still blocked by the frozen gold workbook not being committed at the CI input path, missing real persisted-job mapping/runtime ranking baseline, skipped authenticated production smoke (test credentials absent), and unverified database/storage restore and alert delivery. This document records observed evidence, not intended capabilities.
 
 ## Gate scoreboard
 

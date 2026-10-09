@@ -255,6 +255,12 @@ def main() -> int:
     for record in records:
         groups[record["query_id"]].append(record)
 
+    selected_human_label_header = columns["human_label"] or ""
+    has_final_gold = norm(selected_human_label_header) == "finalgoldlabel"
+    frozen_final_gold = (
+        has_final_gold
+        and workbook_sha == "ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e"
+    )
     evaluation = {
         "dataset": {
             "workbook": str(args.workbook),
@@ -262,6 +268,7 @@ def main() -> int:
             "rows_evaluated": len(records),
             "query_groups": len(groups),
             "human_labels_present": True,
+            "human_label_column_selected": selected_human_label_header,
         },
         "classification": {
             "accuracy": round(safe_div(sum(a == p for a, p in zip(y_true, y_pred)), len(records)), 4),
@@ -280,11 +287,16 @@ def main() -> int:
         },
         "ranking": ranking_metrics(groups),
         "status": {
-            "human_verified": False,
-            "frozen": False,
-            "real_persisted_jobs": bool(args.real_persisted_jobs),
+            "human_verified": has_final_gold,
+            "frozen": frozen_final_gold,
+            "real_persisted_jobs": False,
+            "production_authoritative": False,
             "validated": False,
-            "promotion_note": "Second-reviewer adjudication and final dataset freeze are required before promotion.",
+            "promotion_note": (
+                "Human-gold labels are selected, but production promotion is blocked until real persisted-job mapping and runtime-ranker baseline evidence exist."
+                if has_final_gold
+                else "This workbook does not contain the adjudicated Final Gold Label column; the evaluator fell back to first-pass labels. Use the frozen Human_Gold_Final_v1 artifact before claiming human-verified benchmark results."
+            ),
         },
     }
 
@@ -298,7 +310,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    status = "validated" if evaluation["status"]["validated"] else "human_labeled_pending_adjudication"
+    status = "human_verified_frozen_synthetic_pending_job_mapping" if frozen_final_gold else "human_verified_not_frozen" if has_final_gold else "first_pass_labels_only_not_adjudicated"
     scoreboard = [
         "# Master Scoreboard v1",
         "",

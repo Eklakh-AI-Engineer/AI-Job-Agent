@@ -14,7 +14,7 @@ golden_job_ranking_v1 is now a **frozen, human-verified synthetic benchmark**.
 - Two-reviewer consensus: **83**
 - Third adjudication completed: **58/58**
 - Final gold/reference exact agreement: **397/500 (79.4%)**
-- Final gold SHA-256: ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e**
+- Final gold SHA-256: `ce65bdb07b9724b9851ac91da578a5bce86a0d01715b226cd2ebecd0d737273e`
 
 ### Frozen human-gold baseline
 Using the workbook Match Score as the ranking signal:

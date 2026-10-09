@@ -19,7 +19,7 @@ The repository is in the **v1 completion and validation phase**. The implementat
 | Candidate-job deterministic evaluation | 🟢 Implemented |
 | Hybrid ranking + explanations | 🟢 Implemented |
 | Ranking calibration utility | 🟢 Implemented; empirical calibration pending |
-| 50-query benchmark infrastructure | 🟢 Implemented; final adjudicated workbook frozen externally but not committed at the CI input path |
+| Human benchmark infrastructure | 🟢 Implemented; CI workbook exists, but its SHA-256 does not match the final adjudicated artifact |
 | Ranking metrics | 🟢 Implemented |
 | Ranking regression gate | 🟠 Fail-closed gate implemented; production-authoritative baseline pending |
 | Resume / cover-letter generation | 🟢 Implemented |
@@ -34,7 +34,7 @@ The repository is in the **v1 completion and validation phase**. The implementat
 | Prometheus + structured logging | 🟢 Implemented |
 | Production deployment configuration | 🟢 Implemented for Vercel + Render + Supabase topology |
 | Real ATS dry-run evidence | 🟢 Two public Lever pages passed dry-run validation; no submission occurred |
-| Human-verified ranking benchmark | 🟠 Adjudication complete in frozen workbook; CI input and production-job mapping still pending |
+| Human-verified ranking benchmark | 🟠 Adjudication is documented; exact final workbook artifact reconciliation and production-job mapping remain pending |
 | Production deployment | 🟠 Vercel frontend/API deployed; basic health smoke passes; authenticated workflows, authoritative ranking baseline, and restore validation remain pending |
 
 **Important:** source code being present is not treated as validation. A capability is considered validated only when its tests, failure paths, runtime evidence and documentation agree.
@@ -95,16 +95,16 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for implementation boundaries a
 
 ## Evaluation
 
-The repository contains a reproducible ranking evaluation stack:
+The repository contains a ranking evaluation stack. The committed CI workbook is currently not the exact final frozen artifact; see `docs/evaluation/benchmark_status.json` and `docs/operations/RELEASE_AUDIT_2026-10-09.md` before using any result for release decisions.
 
-- `docs/evaluation/golden_job_ranking_v1.jsonl` — provisional 50-query benchmark;
+- `docs/evaluation/golden_job_ranking_v1.jsonl` — provisional benchmark;
 - `scripts/evaluate_ranking.py` — metric runner;
 - `scripts/validate_benchmark.py` — structural validation and SHA-256 fingerprinting;
 - `scripts/ranking_regression_gate.py` — baseline/threshold enforcement;
 - `backend/evaluation/calibration.py` — deterministic weight-calibration implementation;
 - `docs/evaluation/benchmark_status.json` — benchmark lifecycle state.
 
-The benchmark is **not** called golden until real jobs are human-reviewed, disagreements are adjudicated, and the dataset is frozen with a recorded hash.
+The human-label adjudication and synthetic dataset freeze are documented, but the final workbook hash does not match the workbook currently used by CI, and synthetic job IDs are not mapped to verified persisted production jobs. Do not treat the current metrics as production ranking quality.
 
 ## Verification
 
@@ -183,6 +183,11 @@ The repository includes `render.yaml` and deployment documentation. Production s
 | [Frontend live QA](docs/testing/FRONTEND_LIVE_QA.md) | Live integration checklist |
 | [Deployment](docs/deployment/VERCEL_RENDER_SUPABASE.md) | Vercel/Render/Supabase topology |
 | [Security](docs/SECURITY.md) | Security boundary and controls |
+| [Release runbook](docs/operations/RELEASE_RUNBOOK.md) | Required release gates and release sequence |
+| [Release audit (2026-10-09)](docs/operations/RELEASE_AUDIT_2026-10-09.md) | Evidence-backed release status snapshot |
+| [Documentation index](docs/DOCUMENTATION_INDEX.md) | Documentation map and source-of-truth rules |
+| [Contribution guide](CONTRIBUTING.md) | Safe development and validation workflow |
+| [Changelog](CHANGELOG.md) | User-visible and release-relevant changes |
 | [Pending implementation plan](PENDING_IMPLEMENTATION_PLAN.md) | Remaining validation work |
 
 Historical audit and implementation-plan documents are retained under their historical paths and are not the current source of truth.

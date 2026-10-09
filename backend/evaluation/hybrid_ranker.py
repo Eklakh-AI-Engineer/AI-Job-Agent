@@ -18,6 +18,7 @@ from evaluation.models import (
     RoleMatchStatus,
 )
 from evaluation.evaluator import evaluate_candidate_against_job
+from evaluation.requirements import extract_requirements
 
 
 RANKING_VERSION = "hybrid-v1"
@@ -140,7 +141,7 @@ async def rank_candidate_job(job, candidate_kb: CandidateKB) -> Tuple[Evaluation
     from app.services.embedding_service import generate_search_embedding
     from app.services.job_detail_extraction import clean_job_text
 
-    requirements = __import__("backend.evaluation.requirements", fromlist=["extract_requirements"]).extract_requirements(job)
+    requirements = extract_requirements(job)
     evaluation = evaluate_candidate_against_job(requirements, candidate_kb)
 
     job_text = clean_job_text(

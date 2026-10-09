@@ -79,7 +79,7 @@ async def main() -> int:
         "external_submission_attempted": False,
         "results": results,
     }
-    rendered = json.dumps(evidence, indent=2, sort_keys=True) + "\\n"
+    rendered = json.dumps(evidence, indent=2, sort_keys=True) + "\n"
     print(rendered, end="")
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -22,9 +22,13 @@ mandatory production dependency for the Vercel API paths used by the v1 UI.
 ## Vercel frontend
 
 The existing `frontend/` application is deployed as the `ai-job-agent` Vercel
-project. Set:
+project. The verified production alias is:
 
-`NEXT_PUBLIC_API_URL=https://<backend-vercel-domain>`
+`https://ai-job-agent-theta.vercel.app`
+
+Set the frontend build variable to the verified backend alias:
+
+`NEXT_PUBLIC_API_URL=https://ai-job-agent-api-mu.vercel.app`
 
 Do not put database credentials, Supabase service-role keys, or other private
 secrets in `NEXT_PUBLIC_*` variables.
@@ -82,11 +86,11 @@ object-storage service is required.
 
 Backend health endpoint:
 
-`https://<backend-vercel-domain>/health`
+`https://ai-job-agent-api-mu.vercel.app/health`
 
 Frontend live QA:
 
-`LIVE_API_URL=https://<backend-vercel-domain> npm run test:live`
+`LIVE_API_URL=https://ai-job-agent-api-mu.vercel.app npm run test:live`
 
 `FRONTEND_URL=https://ai-job-agent-theta.vercel.app npm run test:live:frontend`
 

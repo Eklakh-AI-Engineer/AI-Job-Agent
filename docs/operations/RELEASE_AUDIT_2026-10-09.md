@@ -45,7 +45,7 @@ The repository has meaningful code/CI evidence, but the current benchmark source
 4. Run the actual `hybrid-v1` ranker over that frozen mapped benchmark and generate `baseline.json` / `latest.json` with `production_authoritative: true`, identical benchmark hashes, and matching `ranking_version`.
 5. Run the manual production ranking gate and preserve its artifact.
 6. Keep the verified stable aliases or configure GitHub Actions secrets `LIVE_API_URL` and `FRONTEND_URL`; monitoring now passes. Both current live QA smoke jobs pass using `npm install`; synchronize the lockfile, restore `npm ci`, and re-run before release.
-7. Configure a disposable authenticated test account/credential pair and run the remaining authenticated production smoke cases; keep the latest real ATS dry-run artifact.
+7. Configure repository Actions secrets `LIVE_QA_EMAIL` and `LIVE_QA_PASSWORD` for an existing disposable test account. Rerun live QA to exercise authenticated profile/job listing and preserve the sanitized production job export; keep the latest real ATS dry-run artifact.
 8. Verify a database and artifact-storage restore in a separate disposable environment; record backup ID, restore timestamp, row-count checks, migration state, and smoke-test outcome.
 9. Re-run the complete CI/E2E suite, review every gate, then create `v1.0.0`.
 

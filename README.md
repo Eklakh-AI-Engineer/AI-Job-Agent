@@ -19,9 +19,9 @@ The repository is in the **v1 completion and validation phase**. The implementat
 | Candidate-job deterministic evaluation | 🟢 Implemented |
 | Hybrid ranking + explanations | 🟢 Implemented |
 | Ranking calibration utility | 🟢 Implemented; empirical calibration pending |
-| 50-query benchmark infrastructure | 🟢 Implemented; human golden labels pending |
+| 50-query benchmark infrastructure | 🟢 Implemented; final adjudicated workbook frozen externally but not committed at the CI input path |
 | Ranking metrics | 🟢 Implemented |
-| Ranking regression gate | 🟢 Implemented; enforced after benchmark promotion |
+| Ranking regression gate | 🟠 Fail-closed gate implemented; production-authoritative baseline pending |
 | Resume / cover-letter generation | 🟢 Implemented |
 | PDF / DOCX artifacts | 🟢 Implemented |
 | ATS analysis | 🟢 Implemented |
@@ -29,17 +29,17 @@ The repository is in the **v1 completion and validation phase**. The implementat
 | Mock ATS E2E | 🟢 Implemented |
 | Backend true-pipeline E2E | 🟢 Implemented |
 | Frontend build/type/unit CI | 🟢 Implemented |
-| Frontend live integration smoke tests | 🟢 Implemented; live execution pending |
+| Frontend live integration smoke tests | 🟠 Basic live smoke passed; expanded checks exposed an intermittent PgBouncer/asyncpg health issue, fix deployed/revalidation pending |
 | SSRF / upload security controls | 🟢 Implemented |
 | Prometheus + structured logging | 🟢 Implemented |
 | Production deployment configuration | 🟢 Implemented for Vercel + Render + Supabase topology |
-| Real ATS dry-run evidence | 🟠 Requires live browser execution |
-| Human-verified ranking benchmark | 🟠 Requires human review |
+| Real ATS dry-run evidence | 🟢 Two public Lever pages passed dry-run validation; no submission occurred |
+| Human-verified ranking benchmark | 🟠 Adjudication complete in frozen workbook; CI input and production-job mapping still pending |
 | Production deployment | 🟠 Vercel frontend/API deployed; basic health smoke passes; authenticated workflows, authoritative ranking baseline, and restore validation remain pending |
 
 **Important:** source code being present is not treated as validation. A capability is considered validated only when its tests, failure paths, runtime evidence and documentation agree.
 
-## Architecture
+## Target architecture
 
 ```text
                          Vercel / Next.js

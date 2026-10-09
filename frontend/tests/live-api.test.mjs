@@ -8,9 +8,16 @@ test("live backend health endpoint", { skip: !apiUrl }, async () => {
   assert.equal(response.status, 200);
   const body = await response.json();
   assert.equal(body.status, "ok");
+  assert.equal(body.database, "healthy");
 });
 
 test("live backend rejects unauthenticated protected access", { skip: !apiUrl }, async () => {
   const response = await fetch(`${apiUrl}/api/v1/users/me`);
+  assert.ok([401, 403].includes(response.status));
+});
+
+
+test("live job listing rejects unauthenticated access", { skip: !apiUrl }, async () => {
+  const response = await fetch(`${apiUrl}/api/v1/jobs?limit=1`);
   assert.ok([401, 403].includes(response.status));
 });

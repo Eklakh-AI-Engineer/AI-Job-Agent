@@ -106,15 +106,19 @@ class ApifyJobSource:
         """
         Discover jobs from Indeed using Apify actor.
         """
-        actor_id = "apify/indeed-scraper"
+        actor_id = "johnvc~indeed-jobs-api"
         
-        input_data = {
-            "keywords": keywords,
-            "locations": locations,
-            "maxResults": max_results,
-        }
-        
-        items = await self.run_actor(actor_id, input_data)
+        # The actor takes one location per run, so run it once per location
+        items = []
+        for location in locations or [""]:
+            input_data = {
+                "mode": "search",
+                "keywords": keywords,
+                "location": location,
+                "maxResultsPerInput": max_results,
+                "descriptionFormat": "text",
+            }
+            items += await self.run_actor(actor_id, input_data)
         return self._normalize_indeed_items(items)
 
     def _normalize_linkedin_items(self, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -146,18 +150,20 @@ class ApifyJobSource:
         """Normalize Indeed job items to standard format."""
         normalized = []
         for item in items:
+            if item.get("result_type") != "job":
+                continue  # error rows
             try:
                 normalized.append({
-                    "title": item.get("title", ""),
+                    "title": item.get("jobTitle", ""),
                     "url": item.get("jobUrl", ""),
                     "location": item.get("location", ""),
                     "source": "Indeed",
-                    "company": item.get("company", ""),
+                    "company": item.get("companyName", ""),
                     "source_job_id": f"ind_{item.get('jobId', '')}",
                     "application_url": item.get("applyUrl", item.get("jobUrl", "")),
-                    "job_description": item.get("description", ""),
-                    "work_mode": self._infer_work_mode(item.get("location", ""), item.get("jobType", "")),
-                    "posted_date": item.get("date", ""),
+                    "job_description": item.get("descriptionText", ""),
+                    "work_mode": self._infer_work_mode(item.get("location", ""), item.get("workModel", "")),
+                    "posted_date": item.get("datePosted", ""),
                     "raw_source_reference": {
                         "source": "indeed_apify",
                         "original_data": item,
